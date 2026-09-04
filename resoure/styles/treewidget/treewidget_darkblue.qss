@@ -1,0 +1,23 @@
+/* treewidget_darkblue.qss */
+QTreeWidget {
+    background: #1E3A5F;
+    color: white;
+    border: none;
+    font-size: 18px;
+}
+/* item 格式 + 去掉虚线框 */
+QTreeWidget::item {
+    height: 28px;
+    padding: 6px;
+    font-size: 18px;
+    outline: none;
+}
+
+
+QHeaderView::section {
+    background: #294E75;
+    color: white;
+    border: 1px solid #1E3A5F;
+    padding: 4px;
+    font-size: 18px;
+}

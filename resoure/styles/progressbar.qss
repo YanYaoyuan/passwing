@@ -1,0 +1,40 @@
+/* ===============================
+   🌈 QProgressBar - 淡蓝圆角风格
+   =============================== */
+
+QProgressBar {
+    background-color: #e6f2ff;        /* 背景淡蓝 */
+    border: 1px solid #a8c8e6;
+    border-radius: 8px;
+    text-align: center;
+    color: #003366;
+    font: 9pt "Microsoft YaHei";
+    height: 18px;
+}
+
+/* 进度条部分 */
+QProgressBar::chunk {
+    background-color: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:0,
+        stop:0 #66a3ff, stop:1 #2f5ea8
+    );
+    border-radius: 7px;
+}
+
+/* 悬停时进度条更亮（在带交互的进度条中好看） */
+QProgressBar:hover::chunk {
+    background-color: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:0,
+        stop:0 #80b5ff, stop:1 #4d94ff
+    );
+}
+
+/* 禁用状态 */
+QProgressBar:disabled {
+    background-color: #e0ebf5;
+    border: 1px solid #b0cde0;
+    color: #7a96b2;
+}
+QProgressBar:disabled::chunk {
+    background-color: #bcd4ee;
+}

@@ -1,0 +1,13 @@
+QComboBox {
+    border: 1px solid #b6b6b6;
+    border-radius: 4px;
+    padding: 2px 6px 2px 6px;
+    min-width: 6em;
+    background: gray;
+}
+
+QComboBox:editable {
+    background: gray;
+}
+
+

@@ -1,0 +1,37 @@
+# CMake build trees and generated files
+/build/
+/out/
+/cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+
+# Qt Creator and user-local presets
+*.user
+*.user.*
+CMakeUserPresets.json
+
+# IDE and operating-system metadata
+/.vs/
+/.vscode/
+/.idea/
+/.passwing.git/
+.DS_Store
+Thumbs.db
+
+# Runtime-generated outputs
+/mesh/
+/air.dxf
+
+# Compiled artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb

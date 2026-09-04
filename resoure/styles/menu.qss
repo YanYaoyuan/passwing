@@ -1,0 +1,72 @@
+/* ================================
+   QMenu 样式（右键菜单 / 下拉菜单）
+   ================================ */
+QMenu {
+    background-color: #FFFFFF;
+    color: #1E3A5F;
+    border: 1px solid #BFD4EE;
+    border-radius: 6px;
+    padding: 6px;
+    font-family: "Segoe UI", "Microsoft YaHei";
+    font-size: 16px;
+}
+
+QMenu::item {
+    padding: 6px 20px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background-color: #C7E0FF;
+    color: #0F3057;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #D0E3F5;
+    margin: 4px 10px;
+}
+
+QMenu::icon {
+    padding-right: 6px;
+}
+
+QMenu::indicator {
+    width: 12px;
+    height: 12px;
+}
+
+/* ================================
+   QMenuBar 样式（窗口顶部菜单栏）
+   ================================ */
+QMenuBar {
+    background-color: #E9F2FB;
+    color: #1E3A5F;
+    font-size: 17px;
+    font-family: "Segoe UI", "Microsoft YaHei";
+    border: none;
+}
+
+QMenuBar::item {
+    spacing: 6px;
+    padding: 4px 12px;
+    background: transparent;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background: #C7E0FF;
+    color: #0F3057;
+}
+
+QMenuBar::item:pressed {
+    background: #B2D0FA;
+}
+
+/* ================================
+   可选：悬浮阴影效果（Fluent风格）
+   ================================ */
+QMenu {
+    /* 阴影通过透明边实现，Qt 无原生阴影参数 */
+    border: 1px solid rgba(191, 212, 238, 0.8);
+}

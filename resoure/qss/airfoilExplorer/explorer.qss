@@ -1,0 +1,138 @@
+/* ================= 全局 ================= */
+* {
+    font-family: "Microsoft YaHei";
+    font-size: 13px;
+    color: #2B2B2B;
+}
+
+QWidget {
+    background: #EEF2F6;
+}
+
+/* ================= 卡片容器 ================= */
+QFrame#Card {
+    background: white;
+    border: 1px solid #D6DCE5;
+    border-radius: 8px;
+}
+
+/* ================= QListWidget ================= */
+QListWidget {
+    background: white;
+    border: 1px solid #D6DCE5;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+QListWidget::item {
+    height: 34px;
+    padding-left: 10px;
+    border-radius: 4px;
+}
+
+QListWidget::item:hover {
+    background: #EAF2FF;
+}
+
+QListWidget::item:selected {
+    background: #DCEBFF;
+    border-left: 4px solid #2F6FB1;
+    color: #1E4E8C;
+}
+
+/* ================= QPushButton ================= */
+QPushButton {
+    background-color: #2F6FB1;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+QPushButton:hover {
+    background-color: #3A7BD5;
+}
+
+QPushButton:pressed {
+    background-color: #255A94;
+}
+
+/* 次按钮 */
+QPushButton[class="secondary"] {
+    background: #E6ECF3;
+    color: #2F6FB1;
+    border: 1px solid #C9D6E5;
+}
+
+QPushButton[class="secondary"]:hover {
+    background: #DCE6F2;
+}
+
+/* ================= QCheckBox ================= */
+QCheckBox {
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #BFC8D4;
+    border-radius: 3px;
+    background: white;
+}
+
+QCheckBox::indicator:checked {
+    background: #2F6FB1;
+    border-color: #2F6FB1;
+}
+
+QCheckBox::indicator:checked::after {
+
+    color: white;
+    font-weight: bold;
+}
+
+/* ================= QSlider ================= */
+QSlider::groove:horizontal {
+    height: 6px;
+    background: #D6DCE5;
+    border-radius: 3px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #2F6FB1;
+    border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 2px solid #2F6FB1;
+    border-radius: 7px;
+    margin: -4px 0;
+}
+
+/* ================= QTextEdit / QLineEdit ================= */
+QTextEdit, QLineEdit {
+    background: white;
+    border: 1px solid #D6DCE5;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* ================= QGroupBox ================= */
+QGroupBox {
+    border: 1px solid #D6DCE5;
+    border-radius: 6px;
+    margin-top: 12px;
+    background: white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    top: -8px;
+    background: white;
+    padding: 0 6px;
+    color: #2F6FB1;
+}

@@ -1,0 +1,20 @@
+QLineEdit {
+    background-color: #f0f0f0; /* 设置背景颜色 */
+    border: 2px solid #555; /* 设置边框颜色和宽度 */
+    border-radius: 4px; /* 设置边框圆角 */
+    padding: 5px; /* 设置内边距 */
+    color: #000; /* 设置文本颜色 */
+}
+QLineEdit:focus {
+    border: 2px solid #0078D7; /* 焦点时的边框颜色 */
+}
+QLineEdit {
+    color: #575757; /* 文本颜色 */
+}
+
+QLineEdit::placeholder {
+    color: #a8a8a8; /* 占位符文本颜色 */
+}
+QLineEdit{
+max-height: 20px;
+}

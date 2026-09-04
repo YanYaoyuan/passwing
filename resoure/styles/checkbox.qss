@@ -1,0 +1,52 @@
+/* ===============================
+   🌈 QCheckBox - 淡蓝主题
+   =============================== */
+
+QCheckBox {
+    spacing: 8px;
+    color: #003366;
+    font: 10pt "Microsoft YaHei";
+}
+
+/* 鼠标悬停文本颜色稍亮 */
+QCheckBox:hover {
+    color: #004c99;
+}
+
+/* 复选框本体 */
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #a8c8e6;
+    border-radius: 4px;
+    background-color: #f8fbff;
+}
+
+/* 悬停时高亮边框 */
+QCheckBox::indicator:hover {
+    border: 1px solid #66a3ff;
+    background-color: #ffffff;
+}
+
+/* 选中状态：浅蓝背景 + 深蓝勾 */
+QCheckBox::indicator:checked {
+    image: url(:/icons/widget/checkmark.svg);
+    background-color: #cce5ff;
+    border: 1px solid #66a3ff;
+}
+
+/* 半选中（用于部分选中状态） */
+QCheckBox::indicator:indeterminate {
+    background-color: #b3d1ff;
+    border: 1px solid #66a3ff;
+    image: url(:/icons/widget/minus.svg);
+}
+
+/* 禁用状态 */
+QCheckBox:disabled {
+    color: #7a96b2;
+}
+QCheckBox::indicator:disabled {
+    border: 1px solid #b0cde0;
+    background-color: #e0ebf5;
+}

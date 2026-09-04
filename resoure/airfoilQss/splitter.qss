@@ -1,0 +1,10 @@
+ QSplitter::handle {
+            background-color: gray;
+            border: 1px solid #000000;
+        }
+        QSplitter::handle:horizontal {
+            width: 1px; /* 设置水平分割线的宽度 */
+        }
+        QSplitter::handle:vertical {
+            height: 1px; /* 设置垂直分割线的高度 */
+        }

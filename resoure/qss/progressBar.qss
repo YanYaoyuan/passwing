@@ -1,0 +1,11 @@
+QProgressBar {
+    border: 4px solid grey;
+    border-radius: 5px;
+    text-align: center;
+    min-height: 15px; /* 你可以根据需要调整这个值 */
+}
+
+QProgressBar::chunk {
+    background-color: #05B8CC;
+    width: 20px;
+}

@@ -1,0 +1,36 @@
+QSpinBox#choiceSpinBox{
+    padding-right: 10px;  /* 调整内容区的填充，给右侧按钮留出空间 */
+    padding-left: 10px;   /* 调整内容区的填充，给左侧按钮留出空间 */
+    background-color: transparent;
+}
+
+QSpinBox#choiceSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: right;  /* 将增加按钮放在右边 */
+    width: 20px;
+    height: 20px;
+    border-image: url(:/images/right-arrow.png);  /* 设置右箭头图像 */
+}
+
+QSpinBox#choiceSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: left;  /* 将减少按钮放在左边 */
+    width: 20px;
+    height: 20px;
+    border-image: url(:/images/left-arrow.png);  /* 设置左箭头图像 */
+}
+
+QSpinBox#choiceSpinBox::up-button:pressed, QSpinBox::down-button:pressed {
+    margin-top: 4px;
+}
+
+QSpinBox#choiceSpinBox::up-arrow, QSpinBox::down-arrow {
+    width: 0px;  /* 隐藏默认的箭头 */
+    height: 0px;
+}
+
+QSpinBox#choiceSpinBox QLineEdit {
+    background: transparent; /* 设置编辑区域背景为无色（透明） */
+    border: none; /* 去掉边框 */
+    padding: 0px;  /* 确保编辑框填充正确 */
+}

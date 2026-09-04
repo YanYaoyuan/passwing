@@ -1,0 +1,10 @@
+QPushButton#iconButton {
+                border: none;
+                border-radius: 10px;
+                background-color: transparent;
+                /* color: #FFFFFF; 使用白色文字以保证在亮色背景上的可读性 */
+                }
+
+
+
+

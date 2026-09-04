@@ -1,0 +1,15 @@
+QPushButton#colorButton {
+                border: 1px solid #8f8f91;
+                border-radius: 5px;
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
+                color: #FFFFFF; 
+                }
+
+QPushButton#colorButton:hover {
+    background-color: #2980b9;
+    border-color: #2980b9; 
+}
+QPushButton#colorButton:pressed {
+    background-color: #1f618d; 
+    border-color: #1f618d; 
+}

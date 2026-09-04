@@ -1,0 +1,50 @@
+/* =========================================
+   QToolButton — Fluent 天蓝风格
+   ========================================= */
+QToolButton#toolButton {    background-color: #F7FAFE;
+    border: 1px solid #BBD5F5;
+    border-radius: 8px;
+    color: #1E3A5F;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 4px 8px;
+    margin: 2px;
+    min-width: 80px;
+    /* ✅ 不因状态变化导致尺寸变化 */
+    outline: none;
+
+}
+
+/* 鼠标悬停 */
+QToolButton#toolButton:hover {
+    background-color: #D7E9FB;                /* 浅天蓝 hover */
+    border: 1px solid #89B4F8;
+    color: #0A275E;
+}
+
+/* 点击时 */
+QToolButton#toolButton:pressed {
+    background-color: #CFE4FD;                /* 稍深的蓝色 */
+    border: 1px solid #5A7EC8;
+    color: #0A275E;
+}
+
+/* 选中状态 (checkable=true) */
+QToolButton#toolButton:checked {
+    background-color: #89B4F8;                /* 主蓝色 */
+    border: 1px solid #5A7EC8;
+    color: white;
+    font-weight: 600;
+}
+
+/* 禁用状态 */
+QToolButton#toolButton:disabled {
+    background-color: #EEF3FA;
+    border: 1px solid #D5E1F2;
+    color: #A0AFC7;
+}
+
+/* 去掉菜单箭头 */
+QToolButton#toolButton::menu-indicator {
+    image: none;
+}

@@ -1,0 +1,14 @@
+
+    QLabel {
+        color: #333;
+        background-color: #f0f0f0;
+        //border: 1px solid #000;
+        border-radius: 4px;
+        padding: 2px;
+    }
+QLabel{
+max-height: 20px;
+}
+QLabel { 
+qproperty-alignment: 'AlignCenter'; 
+}

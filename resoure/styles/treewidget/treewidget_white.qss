@@ -1,0 +1,25 @@
+/* treewidget_white.qss */
+
+QTreeWidget {
+    background: #FFFFFF;
+    color: #222222;
+    border: 1px solid #CCCCCC;
+    font-size: 18px;
+}
+
+/* item 格式 + 去掉虚线框 */
+QTreeWidget::item {
+    height: 28px;
+    padding: 6px;
+    font-size: 18px;
+    outline: none;
+}
+
+/* header */
+QHeaderView::section {
+    background: #F0F0F0;
+    color: #222222;
+    border: 1px solid #CCCCCC;
+    padding: 4px;
+    font-size: 18px;
+}

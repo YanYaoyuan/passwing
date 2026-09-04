@@ -1,0 +1,17 @@
+QMenu {
+    background-color: lightgray;
+    border: 1px solid gray;
+}
+
+QMenu::item {
+    background-color: transparent;
+}
+
+QMenu::item:selected {
+    background-color: blue;
+    color: white;
+}
+
+QAction:hover {
+    background-color: blue;
+}

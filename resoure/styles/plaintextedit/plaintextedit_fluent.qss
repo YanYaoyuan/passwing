@@ -1,0 +1,19 @@
+QPlainTextEdit {
+    background-color: #1E272E;         /* 原色：深灰蓝 */
+    color: #FFFFFF;
+    border: 1px solid #3C4352;
+    border-radius: 6px;                /* 更现代的圆角 */
+    selection-background-color: #3C4352;
+    selection-color: white;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 16px;                   /* 字体升级：更好读 */
+    padding: 6px;                      /* 增加内边距：更舒适 */
+}
+
+QPlainTextEdit:hover {
+    border: 1px solid #4A5265;         /* Hover 高亮 */
+}
+
+QPlainTextEdit:focus {
+    border: 1px solid #69738A;         /* 聚焦时更明显但不刺眼 */
+}

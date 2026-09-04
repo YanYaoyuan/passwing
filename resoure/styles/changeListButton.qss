@@ -1,0 +1,42 @@
+/* ============ Fluent 风格按钮条 ============ */
+QPushButton {
+    background-color: #f2f6fb;
+    border: 1px solid #bcd0f5;
+    border-bottom: none;
+    color: #2c3e50;
+    font-family: "Microsoft YaHei";
+    font-size: 15px;
+    padding: 6px 16px;
+    margin: 0px;
+}
+
+/* 悬停轻微高亮 */
+QPushButton:hover {
+    background-color: #e6f0ff;
+}
+
+/* ✅ 选中态：纯靠颜色、边框、底部对比来“假浮起” */
+QPushButton:checked {
+    background-color: #ffffff;          /* 纯白，看起来更靠前 */
+    border: 2px solid #0078d7;          /* 边框加粗 */
+    border-bottom: 2px solid #ffffff;   /* 下边融入内容区 */
+    font-weight: bold;
+    color: #0078d7;
+}
+
+/* 左右紧贴 */
+QPushButton:first-child {
+    border-top-right-radius: 0;
+}
+
+QPushButton:last-child {
+    border-top-left-radius: 0;
+}
+
+/* 组容器底色：帮助“浮起”效果 */
+QWidget#buttonBar {
+    background-color: #e7eff9;          /* 稍暗一点的背景对比 */
+    border-bottom: 2px solid #bcd0f5;
+}
+
+

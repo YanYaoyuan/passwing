@@ -1,0 +1,5 @@
+/* ========= QLabel ========= */
+QLabel {
+    color: #1E3A5F;
+    font-weight: 500;
+}

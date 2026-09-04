@@ -1,0 +1,38 @@
+/* ========= QGroupBox ========= */
+QGroupBox {
+    border: 1px solid #BBD5F5;
+    border-radius: 6px;
+    margin-top: 10px;
+    background-color: #F7FAFE;    /* 内容区域浅蓝 */
+    font-family: "Microsoft YaHei", "SimSun";
+    font-size: 14px;
+    color: #2F3A46;               /* 内容文字微灰，衬托标题 */
+    padding: 10px;
+}
+
+/* 标题区域：更鲜艳、更厚重 */
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+
+    /* 文字风格 */
+    font-family: "Microsoft YaHei", "SimHei", "Arial Black";
+    font-size: 17px;
+    font-weight: bold;
+    color: #004C9E;               /* 深天蓝色，比正文亮 */
+
+    /* 背景风格：渐变 + 圆角 */
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #E2EEFF,
+        stop:1 #C7E0FF
+    );
+    border: 1px solid #A4C8F0;
+    border-radius: 6px;
+
+    /* 内边距 */
+    padding: 4px 10px;
+}
+
+
+

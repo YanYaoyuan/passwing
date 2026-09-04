@@ -1,0 +1,15 @@
+QGroupBox {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+    border: 2px solid gray;
+    border-radius: 5px;
+    padding: 30px; /* 增加内边距，避免与标题重叠 */
+    margin-top: 20px; /* 增加标题顶部的空间 */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center; /* 标题位置在顶部中央 */
+    padding: 0 10px; /* 标题文本的内边距 */
+    background-color: transparent; /* 透明背景 */
+}
