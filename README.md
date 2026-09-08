@@ -54,7 +54,8 @@ cmake --build --preset release --parallel
 推荐使用 MSYS2 MinGW64，并确保所有依赖均来自同一套 MinGW64 工具链：
 
 ```bash
-pacman -S --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja \
+pacman -S --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake \
+  mingw-w64-x86_64-ninja \
   mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts \
   mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-eigen3 \
   mingw-w64-x86_64-hdf5 mingw-w64-x86_64-vtk
@@ -70,6 +71,24 @@ cmake --build --preset release --parallel
 
 如已安装 Qt WebEngine，可去掉 `-DPASSWING_ENABLE_WEBENGINE=OFF`。未安装时程序会使用
 `QTextBrowser` 作为 HTML 页面回退方案。
+
+已有 MSVC 依赖环境时，也可以直接双击仓库根目录的 `build-windows.bat`。脚本会使用
+Visual Studio x64 Release 模式完成配置、编译和运行库部署，输出目录为
+`out/package/PassWing-Windows-x64`，同时生成同名 ZIP 包。本机依赖路径与默认值不同时，
+可在 PowerShell 中覆盖参数：
+
+```powershell
+.\scripts\build-windows.ps1 `
+  -QtRoot "C:\path\to\Qt" `
+  -VtkRoot "C:\path\to\VTK" `
+  -Hdf5Root "C:\path\to\HDF5" `
+  -EigenRoot "C:\path\to\Eigen3"
+```
+
+GitHub Actions 的 Linux 和 Windows 任务也会生成完整的可分发包，并分别上传
+`PassWing-Linux-x64` 和 `PassWing-Windows-x64` 成果物。包内包含程序、Qt 插件、
+VTK/HDF5 等运行库，以及 `setting`、`resoure`、`theoreticalFramework`、
+`libaries`、`help` 和 `Profili.mdb`（仓库中存在时）。
 
 ## 开发
 

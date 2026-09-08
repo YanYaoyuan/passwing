@@ -190,6 +190,7 @@ if(PASSWING_ENABLE_WEBENGINE)
 endif()
 
 if(MSVC)
+    target_compile_definitions(passwing PRIVATE _USE_MATH_DEFINES)
     target_compile_options(passwing PRIVATE /permissive- /utf-8 /W4)
     if(PASSWING_WARNINGS_AS_ERRORS)
         target_compile_options(passwing PRIVATE /WX)
