@@ -294,6 +294,7 @@ int airfoilSolve::solver(){
     yWakeArray = yTmpWake;
     delete foil;
     foil = nullptr;
+    emit workFinish(missionId);
 
     return 0;
 }
