@@ -1338,8 +1338,6 @@ QString wingOptimization::decToBinAlone(int val, const int len) {
 void wingOptimization::restArray(){
 
 
-    if(!initialWingDataArray.isEmpty())
-        initialWingDataArray.clear();
 
 
 
