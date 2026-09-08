@@ -23,6 +23,8 @@ private:
     //int s_IterLim = 200;
     bool m_bErrors = false;
     bool s_bAutoInitBL = true;
+    int missionId;
+
 
 public:
     xfoilSetting input;
@@ -33,6 +35,10 @@ public:
 
 
     airfoilSolve(const xfoilSetting&);
+    void setMissionId(int id){
+        missionId = id;
+    }
+    
 
     bool iterate(XFoil* );
     bool importAirfoil(const QVector<QVector<double>>&);
@@ -86,6 +92,8 @@ public slots:
     void emitResult();
 signals:
     void progressUpdat(int value);
+    void workFinished(int index);
+  
     
     //void workDone(fixClResult res);
 
