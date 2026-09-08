@@ -155,7 +155,7 @@ void airfoilDesign::buildBenrnstein(const QVector<QVector<double>> &airfoildata)
         }
         //lowerMatrix.append(loMatrix);
         Ylower(i) = lowerData[i][1] - lowerData[i][0] * yTe2;
-        //qDebug()<<"pp";
+        //<<"pp";
     }
 
     //Eigen::VectorXd cstUpper = matrixSupper.colPivHouseholderQr().solve(Yupper);
@@ -244,7 +244,7 @@ void airfoilDesign::buildAirfoilCurve(const QVector<double>& cst){
 
     airfoilSum.append(airfoilUpper);
     airfoilSum.append(airfoilLower);
-    //qDebug()<<airfoilLower;
+    //<<airfoilLower;
 
     newAirfoilData = airfoilSum;
 
@@ -653,9 +653,6 @@ void airfoilDesign::computeSimpleParameters(const QVector<QVector<double>> &airf
     QVector<double> allThickness;
     QVector<double> midarcy;
 
-
-
-    qDebug()<<1;
     splitAirfoilData(airfoil);
     int length = 0;
     if(lowerData.length() < upperData.length())
