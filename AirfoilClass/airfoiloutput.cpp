@@ -5,12 +5,17 @@
 
 #include "airfoiloutput.h"
 #include "airfoildesign.h"
+
+#include <cmath>
+
 #include <QMessageBox>
 #include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
-#include <qDebug>
-#define PI  3.1415926
+#include <QDebug>
+namespace {
+constexpr double kPi = 3.14159265358979323846;
+}
 airfoilOutput::airfoilOutput()
 {
 
@@ -339,7 +344,7 @@ void airfoilOutput::drawFoil(){
             break;
         case 2:
             for(int i = 0;i < num;i++){
-                xData.append(0.5 - cos(static_cast<double>(i) * PI / (num - 1) ) * 0.5);
+                xData.append(0.5 - std::cos(static_cast<double>(i) * kPi / (num - 1)) * 0.5);
             }
             break;
         default:
@@ -559,15 +564,15 @@ void airfoilOutput::drawRectangleDXF(QTextStream&dxfstream, const ARectangle &re
     double Y4 = -rectangle.b / 2;
     double x1,y1,x2,y2,x3,y3,x4,y4;
     if(rectangle.roateAngle != 0){
-        double radians = rectangle.roateAngle / 180 * PI;
-        x1 = X1 * cos(radians) - Y1 * sin(radians);
-        y1 = X1 * sin(radians) + Y1 * cos(radians);
-        x2 = X2 * cos(radians) - Y2 * sin(radians);
-        y2 = X2 * sin(radians) + Y2 * cos(radians);
-        x3 = X3 * cos(radians) - Y3 * sin(radians);
-        y3 = X3 * sin(radians) + Y3 * cos(radians);
-        x4 = X4 * cos(radians) - Y4 * sin(radians);
-        y4 = X4 * sin(radians) + Y4 * cos(radians);
+        double radians = rectangle.roateAngle / 180 * kPi;
+        x1 = X1 * std::cos(radians) - Y1 * std::sin(radians);
+        y1 = X1 * std::sin(radians) + Y1 * std::cos(radians);
+        x2 = X2 * std::cos(radians) - Y2 * std::sin(radians);
+        y2 = X2 * std::sin(radians) + Y2 * std::cos(radians);
+        x3 = X3 * std::cos(radians) - Y3 * std::sin(radians);
+        y3 = X3 * std::sin(radians) + Y3 * std::cos(radians);
+        x4 = X4 * std::cos(radians) - Y4 * std::sin(radians);
+        y4 = X4 * std::sin(radians) + Y4 * std::cos(radians);
     }else{
         x1 = X1;
         y1 = Y1;

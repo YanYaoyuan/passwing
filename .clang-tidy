@@ -1,0 +1,12 @@
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  modernize-use-nullptr,
+  performance-*,
+  portability-*,
+  readability-avoid-const-params-in-decls,
+  readability-duplicate-include
+WarningsAsErrors: ''
+HeaderFilterRegex: '^(?!.*(?:qcustomplot|XFoil)).*$'
+FormatStyle: file

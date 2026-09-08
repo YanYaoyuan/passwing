@@ -4,8 +4,6 @@
 #include <QTreeWidget>
 #include <QDialog>
 #include "publicWidgetClass/customscrollarea.h"
-#include <QtWebEngineWidgets/QWebEngineView>
-
 #include "geometryClass/stlreader.h"
 
 class airplaneLibrary : public QWidget
@@ -14,9 +12,10 @@ class airplaneLibrary : public QWidget
 public:
     airplaneLibrary(QWidget* parent = nullptr);
     ~airplaneLibrary();
-    QWebEngineView *webView;
+    QWidget *webView = nullptr;
 
     void showAirportDialog();
+    void stopHtmlLoading();
 private:
     QDialog *libraryDialog;
 
@@ -41,7 +40,8 @@ private:
 
 
     void initialScrolArea();
-    void changeLibrariesView(const QString);
+    void changeLibrariesView(const QString &fileName);
+    void loadHtmlFile(const QString &fileName);
 
 
     void readAllFiles();

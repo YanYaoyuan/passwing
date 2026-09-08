@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QColorDialog>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QThread>
 #include <QGroupBox>
 #include "PublicClass/structDefinition.h"

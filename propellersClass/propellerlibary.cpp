@@ -7,7 +7,7 @@
 #include <QDir>
 #include <QFile>
 #include <QTextStream>
-#include <qDebug>
+#include <QDebug>
 
 propellerLibary::propellerLibary() {
     initialPropLibaries();

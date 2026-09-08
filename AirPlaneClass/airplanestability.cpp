@@ -1,6 +1,6 @@
 ﻿#include "airplanestability.h"
 #include <QtMath>
-#include <qDebug>
+#include <QDebug>
 airplaneStability::airplaneStability()
 {
 

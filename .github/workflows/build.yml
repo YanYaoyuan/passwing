@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build qtbase5-dev \
+            libqt5charts5-dev libqt5opengl5-dev qttools5-dev \
+            libeigen3-dev libhdf5-dev libvtk9-dev libvtk9-qt-dev
+      - name: Configure
+        run: cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF
+      - name: Build
+        run: cmake --build --preset release --parallel 2
+
+  windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-charts
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-eigen3
+            mingw-w64-x86_64-hdf5
+            mingw-w64-x86_64-vtk
+      - name: Configure
+        run: cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF
+      - name: Build
+        run: cmake --build --preset release --parallel 2

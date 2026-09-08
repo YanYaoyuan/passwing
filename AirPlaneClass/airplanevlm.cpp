@@ -1,6 +1,6 @@
 ﻿#include "airplanevlm.h"
 #include <QDebug>
-#include <qmath.h>
+#include <QtMath>
 airplaneVLM::airplaneVLM()
 {
     vinf = 20;

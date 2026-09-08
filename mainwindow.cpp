@@ -1,7 +1,9 @@
 ﻿#include "mainwindow.h"
-#include "help/htmlviewer.h"
-
+#include <QCoreApplication>
+#include <QDesktopServices>
+#include <QFileInfo>
 #include <QMessageBox>
+#include <QUrl>
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
 #endif
@@ -883,14 +885,24 @@ void mainWindow::keyPressEvent(QKeyEvent *event){
     }
 }
 void mainWindow::showHelpHtml(){
-    HTMLViewer viewer;
-    QString path = QDir::currentPath() + "/help/help.html";
-    viewer.openFile(path); // 替换为你自己的HTML文件路径
+    const QString path = QDir(QCoreApplication::applicationDirPath()).filePath("help/help.html");
+    if (!QFileInfo::exists(path)) {
+        QMessageBox::information(this, tr("帮助文档"), tr("当前安装包未提供帮助文档。"));
+        return;
+    }
+    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 void mainWindow::showTheoreticalFrameworkHtml(){
-    HTMLViewer viewer;
-    QString path = QDir::currentPath() + "/theoreticalFramework/document.html";
-    viewer.openFile(path); // 替换为你自己的HTML文件路径
+    const QDir applicationDir(QCoreApplication::applicationDirPath());
+    QString path = applicationDir.filePath("theoreticalFramework/document.html");
+    if (!QFileInfo::exists(path)) {
+        path = applicationDir.filePath("../share/PassWing/theoreticalFramework/document.html");
+    }
+    if (!QFileInfo::exists(path)) {
+        QMessageBox::warning(this, tr("理论文档"), tr("找不到理论文档。"));
+        return;
+    }
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()));
 }
 void mainWindow::changeButtonState() {
     QToolButton *button = qobject_cast<QToolButton*>(sender());
@@ -948,8 +960,7 @@ mainWindow::~mainWindow(){
     designAirfoilWindow->deleteLater();
 
     designWingWindow->deleteLater();
-    displayAirportWindow->webView->stop();
-    delete displayAirportWindow->webView;
+    displayAirportWindow->stopHtmlLoading();
 
 
 }

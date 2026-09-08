@@ -1,11 +1,11 @@
 ﻿#include "propellervlm.h"
 #include "AirfoilClass/airfoildesign.h"
-#include <qmath.h>
+#include <QtMath>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
-#include <qDebug>
+#include <QDebug>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
@@ -2050,7 +2050,7 @@ void propellerVLM::generateWakeMesh(){
 
         for(int q = 0;q<rpmArray.length();q++){
 
-            double dt = dt = M_PI * 2 / gridC / omegaArray[q];
+            const double dt = M_PI * 2 / gridC / omegaArray[q];
 
             QVector<QVector<point3d>>wakeTmp;
             wakeTmp.append(initialCod);

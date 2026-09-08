@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QByteArray>
 #include <QObject>
+#include <QTimer>
 #include "saas/funClass/structcfddefinition.h"
 class jobManager : public QObject
 {

@@ -5,6 +5,9 @@
 #include "AirfoilClass/airfoilsolve.h"
 #include "AirfoilClass/airfoildesign.h"
 
+#include <algorithm>
+#include <limits>
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
 #endif
@@ -120,7 +123,8 @@ void propellerDesign::computeLagrange(){
 
     for(int i = 0;i<propNb;i++){
         // 计算特普朗修正系数kp
-        double exponent = -propNum / 2 * (1 - damiterArray[i] / propR) * tmp1;
+        double exponent = -static_cast<double>(propNum) / 2.0
+                          * (1 - damiterArray[i] / propR) * tmp1;
         kp.append(2 / M_PI * acos(exp(exponent)));
         //tmp2.append(propRpm * propRpm * kp[i] / (propVinf * propVinf + pow((propRpm * damiterArray[i]),2)) * pow(damiterArray[i],3));
     }
@@ -198,9 +202,9 @@ void propellerDesign::computeXfoilData(){
     for(int i = 0;i<step;i++){
         int index = i * threadNum;
         startXfoil(index,threadNum);
-        progressValue = double(i + 1) / step * 96;
+        progressValue = static_cast<int>(static_cast<double>(i + 1) / step * 96.0);
         emit emitProgressValue(progressValue);
-        emit emitMessage(text);
+        emit emitMessage(tr("XFoil batch %1 of %2 completed\n").arg(i + 1).arg(step));
     }
 
     if(remainder > 0){
@@ -255,7 +259,7 @@ void propellerDesign::solveChordB(){
 void propellerDesign::computeEta(){
     QVector<double>tmp1;
     QVector<double>tmp2;
-    double tmp = propNum / 2 * propFt * propFt;
+    double tmp = static_cast<double>(propNum) / 2.0 * propFt * propFt;
     for(int i = 0;i<re.length();i++){
         double cosa = cos(angle[i]);
         double sina = sin(angle[i]);
@@ -494,7 +498,6 @@ void propellerDesign::startXfoil(const int index,const int num){
         solvers->importAirfoil(airfoil);
         solvers->refreshParaments(settingTmp);
         solvers->setMissionId(index + i);
-        connect(solvers,&airfoilSolve::workFinished,this,&propellerDesign::emitId);
         QFuture<void>future = QtConcurrent::run([solvers](){
             solvers->solver();
         });
@@ -713,8 +716,11 @@ double propellerDesign::computeIntegral(
 double propellerDesign::findK(double sum2, double V, double omega, const QVector<double>& r, const QVector<double>& kp, double tolerance) {
     double K1 = 0.0;
     double K2 = 1.0;
-    double K;
-    while (fabs(K2 - K1) > tolerance) {
+    double K = (K1 + K2) / 2.0;
+    const double effectiveTolerance = std::clamp(
+        tolerance, std::numeric_limits<double>::epsilon(), 0.5);
+    for (int iteration = 0; iteration < 100 && std::abs(K2 - K1) > effectiveTolerance;
+         ++iteration) {
         K = (K1 + K2) / 2.0;
         double integral = computeIntegral(K, V, omega, r, kp);
         if (sum2 > integral) {

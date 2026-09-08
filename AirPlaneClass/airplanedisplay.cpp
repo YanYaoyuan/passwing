@@ -1518,7 +1518,6 @@ void airplaneDisplay::createTranslatedArray(vtkSmartPointer<vtkRenderer> ren, vt
 
     vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
     property->SetColor(1.0, 0.0, 0.0); // 可选：设置颜色或其他属性
-    property->SetObjectName("translate");
     actor->SetProperty(property);
 
     // 将演员添加到渲染器

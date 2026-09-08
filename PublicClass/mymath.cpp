@@ -1,5 +1,8 @@
 ﻿#include "mymath.h"
-#include <qDebug>
+#include <QDebug>
+
+#include <algorithm>
+#include <limits>
 const double SEA_LEVEL_PRESSURE = 101325.0; // Pa
 const double SEA_LEVEL_TEMPERATURE = 288.15; // K
 const double TEMPERATURE_LAPSE_RATE = 0.0065; // K/m
@@ -409,6 +412,10 @@ double myMath::cubicSpline(const QVector<double>& x, const QVector<double>& y, d
     // 计算 h
     for (int i = 0; i < n - 1; ++i) {
         h[i] = x[i + 1] - x[i];
+        if (h[i] <= 0.0) {
+            qWarning() << "cubicSpline requires strictly increasing x values";
+            return std::numeric_limits<double>::quiet_NaN();
+        }
     }
 
     // 构建矩阵 A 和向量 B
@@ -444,6 +451,7 @@ double myMath::cubicSpline(const QVector<double>& x, const QVector<double>& y, d
     while (i < n - 1 && xq > x[i + 1]) {
         ++i;
     }
+    i = std::min(i, n - 2);
 
     // 计算插值
     double dx = xq - x[i];

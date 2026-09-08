@@ -1848,9 +1848,8 @@ void airfoilExplorer::clearGraph(QCustomPlot* plot, QCPGraph*& graphPtr)
 {
     if (graphPtr)
     {
-        plot->removeGraph(graphPtr); // 从 plot 中移除
-        delete graphPtr;             // 删除 graph 对象
-        graphPtr = nullptr;          // 指针置空
+        plot->removeGraph(graphPtr); // QCustomPlot owns and deletes the graph.
+        graphPtr = nullptr;
     }
 }
 

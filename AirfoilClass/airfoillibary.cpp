@@ -1,7 +1,7 @@
 ﻿#include "airfoillibary.h"
 #include <QDir>
 #include<QMessageBox>
-#include <qmath.h>
+#include <QtMath>
 #include "airfoildesign.h"
 
 #include <QDebug>

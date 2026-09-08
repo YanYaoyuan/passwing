@@ -1,23 +1,37 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 project(PassWing VERSION 0.1.0 LANGUAGES C CXX)
+
+include(GNUInstallDirs)
+
+option(PASSWING_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+option(PASSWING_ENABLE_WEBENGINE "Enable the embedded HTML aircraft view" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_AUTOUIC ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Discover dependencies through CMAKE_PREFIX_PATH; never hard-code a
-# contributor's local installation paths in this file.
-find_package(Qt5 5.14 REQUIRED COMPONENTS
-    Core Widgets Network Sql Help OpenGL Charts WebEngineWidgets
-)
-find_package(HDF5 REQUIRED COMPONENTS C CXX)
-find_package(VTK REQUIRED)
+# Resolve dependencies through CMAKE_PREFIX_PATH or the CMake package registry.
+# Developer-specific paths belong in the untracked CMakeUserPresets.json.
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+set(PASSWING_QT_PACKAGE "Qt${QT_VERSION_MAJOR}")
 
-# Prefer the vendored Eigen headers, but also support a system installation.
+find_package(${PASSWING_QT_PACKAGE} REQUIRED COMPONENTS
+    Charts Concurrent Core Help Network OpenGL PrintSupport Sql Widgets
+)
+if(PASSWING_ENABLE_WEBENGINE)
+    find_package(${PASSWING_QT_PACKAGE} QUIET COMPONENTS WebEngineWidgets)
+    if(NOT TARGET ${PASSWING_QT_PACKAGE}::WebEngineWidgets)
+        message(WARNING "Qt WebEngine was not found; using the QTextBrowser fallback")
+        set(PASSWING_ENABLE_WEBENGINE OFF)
+    endif()
+endif()
+find_package(HDF5 REQUIRED COMPONENTS C CXX)
+find_package(VTK 9.0 REQUIRED)
+
 set(PASSWING_EIGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdLib/Eigen3/include/eigen3")
 if(EXISTS "${PASSWING_EIGEN_DIR}/Eigen/Core")
     add_library(passwing_eigen INTERFACE)
@@ -29,112 +43,122 @@ endif()
 
 set(PASSWING_SOURCES
     main.cpp
-    # Header-only QObject classes must be listed so CMAKE_AUTOMOC sees them.
-    PublicClass/mychartview.h
-    PublicClass/hoverbutton.h
-    publicWidgetClass/customscrollArea.h
-    publicWidgetClass/imagebutton.h
-    AirfoilClass/airfoildesign.h
-    AirfoilClass/airfoildesign.cpp
-    AirfoilClass/airfoilsolve.h
-    AirfoilClass/airfoilsolve.cpp
-    AirfoilClass/airfoiloptimization.h
-    AirfoilClass/airfoiloptimization.cpp
-    AirfoilClass/airfoillibary.h
-    AirfoilClass/airfoillibary.cpp
-
-    AirfoilClass/airfoilanalyse.h
-    AirfoilClass/airfoilanalyse.cpp
-    AirfoilClass/airfoilexplorer.h
-    AirfoilClass/airfoilexplorer.cpp
-    AirfoilClass/airfoiloutput.h
-    AirfoilClass/airfoiloutput.cpp
-    AirfoilClass/airfoilmesh.h
-    AirfoilClass/airfoilmesh.cpp
-    AirfoilClass/cfddatareader.h
-    AirfoilClass/cfddatareader.cpp
-    AirfoilClass/XFoil.h
-    AirfoilClass/XFoil.cpp
-    AirfoilClass/airfoildisplay.h
-    AirfoilClass/airfoildisplay.cpp
-    WingClass/wingdisplay.h
-    WingClass/wingdisplay.cpp
-    WingClass/wingvlm.h
-    WingClass/wingvlm.cpp
-    WingClass/wingoptimization.h
-    WingClass/wingoptimization.cpp
-    PublicClass/mymath.h
-    PublicClass/mymath.cpp
-    PublicClass/qcustomplot.h
-    PublicClass/qcustomplot.cpp
-    publicWidgetClass/rangeslider.h
-    publicWidgetClass/rangeslider.cpp
-    publicWidgetClass/glwidget.h
-    publicWidgetClass/glwidget.cpp
-    publicWidgetClass/switchbutton.h
-    publicWidgetClass/switchbutton.cpp
-    publicWidgetClass/callout.h
-    publicWidgetClass/callout.cpp
-    publicWidgetClass/datapointdialog.h
-    publicWidgetClass/datapointdialog.cpp
-    propellersClass/propellerlibary.h
-    propellersClass/propellerlibary.cpp
-    propellersClass/propellerdisplay.h
-    propellersClass/propellerdisplay.cpp
-    propellersClass/propellerdesign.h
-    propellersClass/propellerdesign.cpp
-    propellersClass/propellervlm.h
-    propellersClass/propellervlm.cpp
-    propellersClass/propellerbemt.h
-    propellersClass/propellerbemt.cpp
-    help/htmlviewer.h
-    help/htmlviewer.cpp
-    geometryClass/stlreader.h
-    geometryClass/stlreader.cpp
-    geometryClass/airplaneLibrary.h
-    geometryClass/airplaneLibrary.cpp
-    publicClass/myfile.h
-    publicClass/myfile.cpp
-    AirplaneClass/airplanedisplay.h
-    AirplaneClass/airplanedisplay.cpp
-    AirplaneClass/airplanedesign.h
-    AirplaneClass/airplanedesign.cpp
-    AirplaneClass/airplanevlm.h
-    AirplaneClass/airplanevlm.cpp
-    AirplaneClass/airplaneStability.h
-    AirplaneClass/airplaneStability.cpp
-    dynamicModelClass/torsionalSpring.h
-    dynamicModelClass/torsionalSpring.cpp
-    chatClass/chatwidget.h
-    chatClass/chatwidget.cpp
-    mainwindow.h
     mainwindow.cpp
-    saas/cfd/cfddisplay.h
+    mainwindow.h
+
+    AirfoilClass/XFoil.cpp
+    AirfoilClass/XFoil.h
+    AirfoilClass/airfoilanalyse.cpp
+    AirfoilClass/airfoilanalyse.h
+    AirfoilClass/airfoilcompute.h
+    AirfoilClass/airfoildesign.cpp
+    AirfoilClass/airfoildesign.h
+    AirfoilClass/airfoildisplay.cpp
+    AirfoilClass/airfoildisplay.h
+    AirfoilClass/airfoilexplorer.cpp
+    AirfoilClass/airfoilexplorer.h
+    AirfoilClass/airfoillibary.cpp
+    AirfoilClass/airfoillibary.h
+    AirfoilClass/airfoilmesh.cpp
+    AirfoilClass/airfoilmesh.h
+    AirfoilClass/airfoiloptimization.cpp
+    AirfoilClass/airfoiloptimization.h
+    AirfoilClass/airfoiloutput.cpp
+    AirfoilClass/airfoiloutput.h
+    AirfoilClass/airfoilsolve.cpp
+    AirfoilClass/airfoilsolve.h
+    AirfoilClass/cfddatareader.cpp
+    AirfoilClass/cfddatareader.h
+    AirfoilClass/xfoil_params.h
+
+    AirPlaneClass/airplanedesign.cpp
+    AirPlaneClass/airplanedesign.h
+    AirPlaneClass/airplanedisplay.cpp
+    AirPlaneClass/airplanedisplay.h
+    AirPlaneClass/airplanestability.cpp
+    AirPlaneClass/airplanestability.h
+    AirPlaneClass/airplanevlm.cpp
+    AirPlaneClass/airplanevlm.h
+
+    WingClass/wingdefinition.h
+    WingClass/wingdisplay.cpp
+    WingClass/wingdisplay.h
+    WingClass/wingoptimization.cpp
+    WingClass/wingoptimization.h
+    WingClass/wingvlm.cpp
+    WingClass/wingvlm.h
+
+    propellersClass/propellerbemt.cpp
+    propellersClass/propellerbemt.h
+    propellersClass/propellerdesign.cpp
+    propellersClass/propellerdesign.h
+    propellersClass/propellerdisplay.cpp
+    propellersClass/propellerdisplay.h
+    propellersClass/propellerlibary.cpp
+    propellersClass/propellerlibary.h
+    propellersClass/propellervlm.cpp
+    propellersClass/propellervlm.h
+
+    PublicClass/hoverbutton.h
+    PublicClass/mychartview.cpp
+    PublicClass/mychartview.h
+    PublicClass/myfile.cpp
+    PublicClass/myfile.h
+    PublicClass/mymath.cpp
+    PublicClass/mymath.h
+    PublicClass/qcustomplot.cpp
+    PublicClass/qcustomplot.h
+    PublicClass/structDefinition.h
+
+    publicWidgetClass/callout.cpp
+    publicWidgetClass/callout.h
+    publicWidgetClass/customscrollarea.h
+    publicWidgetClass/datapointdialog.cpp
+    publicWidgetClass/datapointdialog.h
+    publicWidgetClass/glwidget.cpp
+    publicWidgetClass/glwidget.h
+    publicWidgetClass/imagebutton.h
+    publicWidgetClass/rangeslider.cpp
+    publicWidgetClass/rangeslider.h
+    publicWidgetClass/switchbutton.cpp
+    publicWidgetClass/switchbutton.h
+
+    geometryClass/airplanelibrary.cpp
+    geometryClass/airplanelibrary.h
+    geometryClass/stlreader.cpp
+    geometryClass/stlreader.h
+    dynamicModelClass/torsionalspring.cpp
+    dynamicModelClass/torsionalspring.h
+    chatClass/chatwidget.cpp
+    chatClass/chatwidget.h
+
     saas/cfd/cfddisplay.cpp
-    saas/funClass/structwidget.h
-    saas/funClass/structwidget.cpp
-    saas/funClass/structcfddefinition.h
+    saas/cfd/cfddisplay.h
     saas/funClass/structcfddefinition.cpp
-    saas/publicClass/fullwidgetdelegate.h
-    saas/publicClass/fullwidgetdelegate.cpp
-    saas/publicClass/myfile.h
-    saas/publicClass/myfile.cpp
-    saas/publicClass/fun3drun.h
-    saas/publicClass/fun3drun.cpp
-    saas/resultClass/colormapmanager.h
-    saas/resultClass/colormapmanager.cpp
-    saas/resultClass/flowviewer.h
-    saas/resultClass/flowviewer.cpp
-    saas/resultClass/pltreader.h
-    saas/resultClass/pltreader.cpp
-    saas/resultClass/vtkscalebar.h
-    saas/resultClass/vtkscalebar.cpp
-    saas/mesh/ugridviewer.h
-    saas/mesh/ugridviewer.cpp
-    saas/login/loginwidget.h
+    saas/funClass/structcfddefinition.h
+    saas/funClass/structwidget.cpp
+    saas/funClass/structwidget.h
     saas/login/loginwidget.cpp
-    saas/manager/jobmanager.h
+    saas/login/loginwidget.h
     saas/manager/jobmanager.cpp
+    saas/manager/jobmanager.h
+    saas/mesh/ugridviewer.cpp
+    saas/mesh/ugridviewer.h
+    saas/publicClass/fullwidgetdelegate.cpp
+    saas/publicClass/fullwidgetdelegate.h
+    saas/publicClass/fun3drun.cpp
+    saas/publicClass/fun3drun.h
+    saas/publicClass/myfile.cpp
+    saas/publicClass/myfile.h
+    saas/resultClass/colormapmanager.cpp
+    saas/resultClass/colormapmanager.h
+    saas/resultClass/flowviewer.cpp
+    saas/resultClass/flowviewer.h
+    saas/resultClass/pltreader.cpp
+    saas/resultClass/pltreader.h
+    saas/resultClass/vtkscalebar.cpp
+    saas/resultClass/vtkscalebar.h
+
     resoure/passwing.qrc
 )
 
@@ -143,52 +167,53 @@ if(WIN32)
 endif()
 
 add_executable(passwing ${PASSWING_SOURCES})
-
-target_include_directories(passwing PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    ${HDF5_INCLUDE_DIRS}
-)
+target_include_directories(passwing PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(passwing PRIVATE
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Network
-    Qt5::Sql
-    Qt5::Help
-    Qt5::OpenGL
-    Qt5::Charts
-    Qt5::WebEngineWidgets
+    ${PASSWING_QT_PACKAGE}::Charts
+    ${PASSWING_QT_PACKAGE}::Concurrent
+    ${PASSWING_QT_PACKAGE}::Core
+    ${PASSWING_QT_PACKAGE}::Help
+    ${PASSWING_QT_PACKAGE}::Network
+    ${PASSWING_QT_PACKAGE}::OpenGL
+    ${PASSWING_QT_PACKAGE}::PrintSupport
+    ${PASSWING_QT_PACKAGE}::Sql
+    ${PASSWING_QT_PACKAGE}::Widgets
+    HDF5::HDF5
     passwing_eigen
-    ${HDF5_CXX_LIBRARIES}
-    ${HDF5_LIBRARIES}
     ${VTK_LIBRARIES}
 )
+
+if(PASSWING_ENABLE_WEBENGINE)
+    target_link_libraries(passwing PRIVATE ${PASSWING_QT_PACKAGE}::WebEngineWidgets)
+    target_compile_definitions(passwing PRIVATE PASSWING_HAS_WEBENGINE=1)
+endif()
+
+if(MSVC)
+    target_compile_options(passwing PRIVATE /permissive- /utf-8 /W4)
+    if(PASSWING_WARNINGS_AS_ERRORS)
+        target_compile_options(passwing PRIVATE /WX)
+    endif()
+else()
+    target_compile_options(passwing PRIVATE -Wall -Wextra -Wpedantic)
+    if(PASSWING_WARNINGS_AS_ERRORS)
+        target_compile_options(passwing PRIVATE -Werror)
+    endif()
+endif()
 
 if(COMMAND vtk_module_autoinit)
     vtk_module_autoinit(TARGETS passwing MODULES ${VTK_LIBRARIES})
 endif()
 
 set_target_properties(passwing PROPERTIES
-    MACOSX_BUNDLE TRUE
+    OUTPUT_NAME PassWing
     WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
 )
 
-include(GNUInstallDirs)
 install(TARGETS passwing
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    BUNDLE DESTINATION .
 )
-
-# Examples:
-# Windows (your current installation):
-#   cmake -S . -B build -G "Visual Studio 16 2019" -A x64
-#     -DCMAKE_PREFIX_PATH="C:/Qt/Qt5.14.2/5.14.2/msvc2017_64"
-#     -DVTK_DIR="C:/VTK/lib/cmake/vtk-9.3"
-#     -DHDF5_ROOT="C:/dev"
-# Linux/macOS (dependencies installed in standard package-manager prefixes):
-#   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-# Build:
-#   cmake --build build --config Release --parallel
+install(DIRECTORY theoreticalFramework
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/PassWing"
+)

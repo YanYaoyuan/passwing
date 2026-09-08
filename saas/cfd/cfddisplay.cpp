@@ -1,6 +1,9 @@
 ﻿#include "cfddisplay.h"
 #include "saas/publicClass/myfile.h"
 #include "saas/resultClass/pltreader.h"
+
+#include <QDir>
+#include <QFileInfo>
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
 #endif
@@ -516,7 +519,12 @@ void cfdDisplay::initialCustomPlot()
     group->addButton(btnResidual, 1);
     group->addButton(btnLiftDrag, 2);
 
-    connect(group, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(group,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            &QButtonGroup::idClicked,
+#else
+            QOverload<int>::of(&QButtonGroup::buttonClicked),
+#endif
             this, [=](int id) {
                 stackedPlot->setCurrentIndex(id);
 
@@ -891,7 +899,12 @@ void cfdDisplay::initialFloatingToolbar()
 
     });
 
-    connect(meshGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(meshGroup,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            &QButtonGroup::idClicked,
+#else
+            QOverload<int>::of(&QButtonGroup::buttonClicked),
+#endif
             this, [=](int id){
 
         // ----------------------------
@@ -1166,10 +1179,21 @@ void cfdDisplay::onAddProjectClicked()
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
     );
 
-    if (runDir.isEmpty()&&QFile::exists(runDir + "/nodet_mpi.exe")) {
+    if (runDir.isEmpty()) {
+        return;
+    }
+
+#ifdef Q_OS_WIN
+    const QString solverName = QStringLiteral("nodet_mpi.exe");
+#else
+    const QString solverName = QStringLiteral("nodet_mpi");
+#endif
+    const QString solverPath = QDir(runDir).filePath(solverName);
+    if (!QFileInfo::exists(solverPath)) {
         QMessageBox::warning(this,
                              tr("缺少可执行文件"),
-                             tr("在指定的目录中未检测到求解器，请检查路径是否正确。"));
+                             tr("在指定目录中未检测到求解器 %1，请检查路径是否正确。")
+                                 .arg(solverName));
         return;
     }
 

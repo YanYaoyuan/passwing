@@ -2,6 +2,12 @@
 #include <QDir>
 
 #include <QPushButton>
+#include <QTextBrowser>
+#include <QUrl>
+
+#ifdef PASSWING_HAS_WEBENGINE
+#include <QtWebEngineWidgets/QWebEngineView>
+#endif
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
 #endif
@@ -18,7 +24,13 @@ airplaneLibrary::airplaneLibrary(QWidget *parent)
 
     // 创建 modelWidget 和 webView
     modelWidget = new STLReader(contentWidget);
+#ifdef PASSWING_HAS_WEBENGINE
     webView = new QWebEngineView(contentWidget);
+#else
+    auto *browser = new QTextBrowser(contentWidget);
+    browser->setOpenExternalLinks(true);
+    webView = browser;
+#endif
 
 
 
@@ -28,8 +40,7 @@ airplaneLibrary::airplaneLibrary(QWidget *parent)
     QString localFilePathA = QDir::currentPath() + "/libaries/airplane/airPort/uas/penguin.stl";
     QString localFilePathB = QDir::currentPath() + "/libaries/airplane/airPort/uas/penguin.html";
     modelWidget->setModelName(localFilePathA);
-    QUrl localFileUrl = QUrl::fromLocalFile(localFilePathB);
-    webView->setUrl(localFileUrl);
+    loadHtmlFile(localFilePathB);
 
 
 
@@ -135,15 +146,27 @@ void airplaneLibrary::readAllFiles(){
 void airplaneLibrary::showAirportDialog(){
     libraryDialog->show();
 }
-void airplaneLibrary::changeLibrariesView(const QString fileName){
+void airplaneLibrary::changeLibrariesView(const QString &fileName){
     stlWidget->setModelName(fileName + ".stl");
 
+}
+void airplaneLibrary::loadHtmlFile(const QString &fileName){
+    const QUrl url = QUrl::fromLocalFile(fileName);
+#ifdef PASSWING_HAS_WEBENGINE
+    static_cast<QWebEngineView *>(webView)->setUrl(url);
+#else
+    static_cast<QTextBrowser *>(webView)->setSource(url);
+#endif
+}
+void airplaneLibrary::stopHtmlLoading(){
+#ifdef PASSWING_HAS_WEBENGINE
+    static_cast<QWebEngineView *>(webView)->stop();
+#endif
 }
 void airplaneLibrary::changeView(){
     libraryDialog->hide();
     modelWidget->setModelName(choiceFileName + ".stl");
-    QUrl localFileUrl = QUrl::fromLocalFile(choiceFileName + ".html");
-    webView->setUrl(localFileUrl);
+    loadHtmlFile(choiceFileName + ".html");
 
 
 }

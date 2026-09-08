@@ -4,6 +4,9 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QDebug>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QStringConverter>
+#endif
 
 myFile::myFile(){
     //readInterData("CLARK Y");
@@ -18,7 +21,11 @@ void myFile::readFile(){
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream stream(&file);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            stream.setEncoding(QStringConverter::Utf8);
+#else
             stream.setCodec("UTF-8");
+#endif
 
             QString title = stream.readLine();
             QStringList titleParts = title.split("  ",Qt::SkipEmptyParts);
@@ -214,7 +221,11 @@ void myFile::writeFile(){
         QFile file(fileName);
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream stream(&file);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            stream.setEncoding(QStringConverter::Utf8);
+#else
             stream.setCodec("UTF-8");
+#endif
             QString dateTimeString = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
             stream<<"project"<<"  "<<dateTimeString<<"\n";
@@ -387,7 +398,7 @@ void myFile::writeFile(){
                         stream<<propellerArray[i].gridU[j]<<"  ";
                     }
                     stream<<"\n";
-                    stream<<"propellerNum  "<<tailArray[i].num;
+                    stream<<"propellerNum  "<<propellerArray[i].num;
                     stream<<"\n";
 
 
@@ -456,6 +467,8 @@ void myFile::clearData(){
     airfoilArray.clear();
     nameArray.clear();
     tailArray.clear();
+    propellerArray.clear();
+    airplaneArray.clear();
 }
 /* airfoil 2
  * wing 3
@@ -509,7 +522,7 @@ void myFile::readInterData(QString name){
                 if (line.isEmpty() && !in.atEnd()) {
                     line = in.readLine(); // 处理可能的空行
                 }
-                QStringList alphaValues = line.split(" ", QString::SkipEmptyParts);
+                QStringList alphaValues = line.split(" ", Qt::SkipEmptyParts);
                 for (const QString& value : alphaValues) {
                     data.alphaData.append(value.toDouble());
                 }
@@ -519,7 +532,7 @@ void myFile::readInterData(QString name){
                 if (line.isEmpty() && !in.atEnd()) {
                     line = in.readLine();
                 }
-                QStringList clValues = line.split(" ", QString::SkipEmptyParts);
+                QStringList clValues = line.split(" ", Qt::SkipEmptyParts);
                 for (const QString& value : clValues) {
                     data.clData.append(value.toDouble());
                 }
@@ -529,7 +542,7 @@ void myFile::readInterData(QString name){
                 if (line.isEmpty() && !in.atEnd()) {
                     line = in.readLine();
                 }
-                QStringList cdValues = line.split(" ", QString::SkipEmptyParts);
+                QStringList cdValues = line.split(" ", Qt::SkipEmptyParts);
                 for (const QString& value : cdValues) {
                     data.cdData.append(value.toDouble());
                 }
@@ -539,7 +552,7 @@ void myFile::readInterData(QString name){
                 if (line.isEmpty() && !in.atEnd()) {
                     line = in.readLine();
                 }
-                QStringList cmValues = line.split(" ", QString::SkipEmptyParts);
+                QStringList cmValues = line.split(" ", Qt::SkipEmptyParts);
                 for (const QString& value : cmValues) {
                     data.cmData.append(value.toDouble());
                 }
@@ -587,7 +600,7 @@ QVector<airfoilData> myFile::getInterData(QString name) {
         if (line.isEmpty() && !in.atEnd()) {
             line = in.readLine(); // 处理可能的空行
         }
-        QStringList alphaValues = line.split(" ", QString::SkipEmptyParts);
+        QStringList alphaValues = line.split(" ", Qt::SkipEmptyParts);
         for (const QString& value : alphaValues) {
             data.alphaData.append(value.toDouble());
         }
@@ -597,7 +610,7 @@ QVector<airfoilData> myFile::getInterData(QString name) {
         if (line.isEmpty() && !in.atEnd()) {
             line = in.readLine();
         }
-        QStringList clValues = line.split(" ", QString::SkipEmptyParts);
+        QStringList clValues = line.split(" ", Qt::SkipEmptyParts);
         for (const QString& value : clValues) {
             data.clData.append(value.toDouble());
         }
@@ -607,7 +620,7 @@ QVector<airfoilData> myFile::getInterData(QString name) {
         if (line.isEmpty() && !in.atEnd()) {
             line = in.readLine();
         }
-        QStringList cdValues = line.split(" ", QString::SkipEmptyParts);
+        QStringList cdValues = line.split(" ", Qt::SkipEmptyParts);
         for (const QString& value : cdValues) {
             data.cdData.append(value.toDouble());
         }
@@ -617,7 +630,7 @@ QVector<airfoilData> myFile::getInterData(QString name) {
         if (line.isEmpty() && !in.atEnd()) {
             line = in.readLine();
         }
-        QStringList cmValues = line.split(" ", QString::SkipEmptyParts);
+        QStringList cmValues = line.split(" ", Qt::SkipEmptyParts);
         for (const QString& value : cmValues) {
             data.cmData.append(value.toDouble());
         }

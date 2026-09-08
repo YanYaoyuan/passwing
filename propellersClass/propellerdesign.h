@@ -117,9 +117,6 @@ private:
 signals:
     void emitMessage(const QString);
     void emitProgressValue(const int);
-private slots:
-    void emitId(const int);
-
 private:
     //生成模型网格
     void initialGeometryMesh();

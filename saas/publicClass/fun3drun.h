@@ -51,7 +51,7 @@ private slots:
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
-    QProcess *process;
+    QProcess *process = nullptr;
     void parseIterationBlock(const QStringList &);
     bool blockStarted = false;
     QStringList currentBlock;      // 缓冲当前 block

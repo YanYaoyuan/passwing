@@ -1061,8 +1061,7 @@ void propellerDisplay::hidePressureContourView(){
     actors->InitTraversal();
     vtkActor* actor = nullptr;
     while ((actor = actors->GetNextActor())) {
-        vtkProperty* property = actor->GetProperty();
-        if (property->GetObjectName() == "rotate") {
+        if (!actor->GetPickable()) {
             rendererE->RemoveActor(actor);
 
         }
@@ -1936,8 +1935,7 @@ void propellerDisplay::updatePropDefineWidget(const wingDefinition& propData){
         actors->InitTraversal();
         vtkActor* actor = nullptr;
         while ((actor = actors->GetNextActor())) {
-            vtkProperty* property = actor->GetProperty();
-            if (property->GetObjectName() == "rotate") {
+            if (!actor->GetPickable()) {
                 rendererE->RemoveActor(actor);
 
             }
@@ -1957,8 +1955,8 @@ void propellerDisplay::updatePropDefineWidget(const wingDefinition& propData){
 
         vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
         property->SetColor(1.0, 0.0, 0.0); // 可选：设置颜色或其他属性
-        property->SetObjectName("rotate");
         newActor->SetProperty(property);
+        newActor->PickableOff();
 
         // 创建和添加旋转阵列
         for(int i = 1;i<propData.num;i++){
@@ -2071,8 +2069,8 @@ void propellerDisplay::CreateRotatedArray(vtkSmartPointer<vtkRenderer> ren, vtkS
 
     vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
     property->SetColor(1.0, 0.0, 0.0); // 可选：设置颜色或其他属性
-    property->SetObjectName("rotate");
     actor->SetProperty(property);
+    actor->PickableOff();
 
     // 将演员添加到渲染器
     ren->AddActor(actor);
@@ -4015,8 +4013,7 @@ void propellerDisplay::updatePressureContourView(const propellerVLM *ned){
     actors->InitTraversal();
     vtkActor* actor = nullptr;
     while ((actor = actors->GetNextActor())) {
-        vtkProperty* property = actor->GetProperty();
-        if (property->GetObjectName() == "rotate") {
+        if (!actor->GetPickable()) {
             rendererE->RemoveActor(actor);
 
         }
@@ -4034,8 +4031,8 @@ void propellerDisplay::updatePressureContourView(const propellerVLM *ned){
 
     vtkSmartPointer<vtkProperty> property = vtkSmartPointer<vtkProperty>::New();
     property->SetColor(1.0, 0.0, 0.0); // 可选：设置颜色或其他属性
-    property->SetObjectName("rotate");
     newActor->SetProperty(property);
+    newActor->PickableOff();
 
     int n = ned->propNum;
     // 创建和添加旋转阵列
@@ -5465,8 +5462,7 @@ void propellerDisplay::hidePropActor(){
     actors->InitTraversal();
     vtkActor* actor = nullptr;
     while ((actor = actors->GetNextActor())) {
-        vtkProperty* property = actor->GetProperty();
-        if (property->GetObjectName() == "rotate") {
+        if (!actor->GetPickable()) {
             actor->VisibilityOff();
 
         }
@@ -5479,8 +5475,7 @@ void propellerDisplay::showPropActor(){
     actors->InitTraversal();
     vtkActor* actor = nullptr;
     while ((actor = actors->GetNextActor())) {
-        vtkProperty* property = actor->GetProperty();
-        if (property->GetObjectName() == "rotate") {
+        if (!actor->GetPickable()) {
             actor->VisibilityOn();
 
         }

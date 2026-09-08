@@ -17,9 +17,6 @@
 
 
 
-#define Exp 2.7182818284590
-#define M_PI 3.141592653589
-
 airfoilDesign::airfoilDesign(const int n)
 
 {
@@ -1069,13 +1066,13 @@ void airfoilDesign::buildHicksHenne(const QVector<double>&c,const double locatio
 
 
 double airfoilDesign::dy1(const double x,const double c){
-    return pow(x,0.25) * (1 - x) * pow(Exp, - 20 * x) * c;
+    return pow(x,0.25) * (1 - x) * std::exp(-20 * x) * c;
 }
 double airfoilDesign::dy2(const double x,const double ek,const double c){
     return pow(sin(M_PI *pow(x,ek)),3) * c;
 }
 double airfoilDesign::dy3(const double x,const double c){
-    return 8 * x * (1 - x) * pow(Exp , -10 * (1 - x)) * c;
+    return 8 * x * (1 - x) * std::exp(-10 * (1 - x)) * c;
 }
  /*************************************************StructDesign******************************************************/
 

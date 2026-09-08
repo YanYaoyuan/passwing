@@ -1,8 +1,10 @@
 ﻿#include "saas/publicClass/fun3drun.h"
-#include <windows.h>
 #include <QDebug>
 #include <QDir>
 #include <QRegularExpression>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
 #endif
@@ -20,6 +22,10 @@ fun3DRun::fun3DRun(QObject *parent) : QObject(parent)
 
 void fun3DRun::startMPI(const QString &exeName, int processCount, const QString &workingDir)
 {
+    if (processCount <= 0 || exeName.trimmed().isEmpty() || !QDir(workingDir).exists()) {
+        emit newError(tr("Invalid MPI launch configuration."));
+        return;
+    }
 
 #ifdef Q_OS_WIN
     process->setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
@@ -27,14 +33,20 @@ void fun3DRun::startMPI(const QString &exeName, int processCount, const QString 
     });
 #endif
 
-    QString program = "mpiexec";
-    QStringList arguments;
-    arguments << "-n" << QString::number(processCount) << exeName;
+    const QString program = QStringLiteral("mpiexec");
+    const QStringList arguments{
+        QStringLiteral("-n"),
+        QString::number(processCount),
+        QDir::toNativeSeparators(exeName),
+    };
 
-
-
+    currentBlock.clear();
     process->setWorkingDirectory(workingDir);
     process->start(program, arguments);
+    isRun = process->waitForStarted(3000);
+    if (!isRun) {
+        emit newError(tr("Unable to start mpiexec: %1").arg(process->errorString()));
+    }
 }
 void fun3DRun::stop()
 {
@@ -137,7 +149,6 @@ void fun3DRun::onReadyReadStandardOutput()
 
 void fun3DRun::onReadyReadStandardError()
 {
-    isRun = false;
     QString text = QString::fromLocal8Bit(process->readAllStandardError());
     if (!text.isEmpty())
         emit newError(text);  // 单纯传给 UI 日志窗口

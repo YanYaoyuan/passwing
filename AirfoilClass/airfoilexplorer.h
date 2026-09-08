@@ -19,7 +19,9 @@
 #include "PublicClass/qcustomplot.h"
 #include "PublicClass/structDefinition.h"
 #include "AirfoilClass/airfoilsolve.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_CHARTS_USE_NAMESPACE
+#endif
 
 struct AirfoilLib
 {
