@@ -12,6 +12,7 @@
 #include <QtCharts/QLegendMarker>
 #include <QApplication>
 #include <QButtonGroup>
+#include <iostream>
 #include "publicWidgetClass/datapointdialog.h"
 #include "vtkCellData.h"
 #include "dynamicModelClass/torsionalspring.h"
