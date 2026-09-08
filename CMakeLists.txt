@@ -30,7 +30,34 @@ if(PASSWING_ENABLE_WEBENGINE)
     endif()
 endif()
 find_package(HDF5 REQUIRED COMPONENTS C CXX)
-find_package(VTK 9.0 REQUIRED)
+if(UNIX AND NOT APPLE)
+    # Debian's VTK package exports GLVND targets from its imported modules.
+    set(OpenGL_GL_PREFERENCE GLVND)
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL GLX)
+endif()
+find_package(VTK 9.0 REQUIRED COMPONENTS
+    CommonColor
+    CommonComputationalGeometry
+    CommonCore
+    CommonDataModel
+    CommonMath
+    CommonTransforms
+    FiltersCore
+    FiltersGeneral
+    FiltersGeometry
+    FiltersModeling
+    FiltersSources
+    GUISupportQt
+    ImagingHybrid
+    InteractionStyle
+    InteractionWidgets
+    IOGeometry
+    IOLegacy
+    IOParallel
+    RenderingAnnotation
+    RenderingCore
+    RenderingOpenGL2
+)
 
 set(PASSWING_EIGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdLib/Eigen3/include/eigen3")
 if(EXISTS "${PASSWING_EIGEN_DIR}/Eigen/Core")
