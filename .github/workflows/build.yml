@@ -8,7 +8,7 @@ jobs:
   linux:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -93,7 +93,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -107,7 +107,11 @@ jobs:
             mingw-w64-x86_64-qt6-charts
             mingw-w64-x86_64-qt6-tools
             mingw-w64-x86_64-eigen3
+            mingw-w64-x86_64-exprtk
+            mingw-w64-x86_64-fast_float
             mingw-w64-x86_64-hdf5
+            mingw-w64-x86_64-nlohmann-json
+            mingw-w64-x86_64-utf8cpp
             mingw-w64-x86_64-vtk
       - name: Verify toolchain and dependencies
         run: |
@@ -117,7 +121,9 @@ jobs:
           ninja --version
           pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-qt6-base \
             mingw-w64-x86_64-qt6-charts mingw-w64-x86_64-qt6-tools \
-            mingw-w64-x86_64-eigen3 mingw-w64-x86_64-hdf5 \
+            mingw-w64-x86_64-eigen3 mingw-w64-x86_64-exprtk \
+            mingw-w64-x86_64-fast_float mingw-w64-x86_64-hdf5 \
+            mingw-w64-x86_64-nlohmann-json mingw-w64-x86_64-utf8cpp \
             mingw-w64-x86_64-vtk
       - name: Configure
         run: cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF

@@ -58,7 +58,9 @@ pacman -S --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake \
   mingw-w64-x86_64-ninja \
   mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts \
   mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-eigen3 \
-  mingw-w64-x86_64-hdf5 mingw-w64-x86_64-vtk
+  mingw-w64-x86_64-exprtk mingw-w64-x86_64-fast_float \
+  mingw-w64-x86_64-hdf5 mingw-w64-x86_64-nlohmann-json \
+  mingw-w64-x86_64-utf8cpp mingw-w64-x86_64-vtk
 ```
 
 在 MSYS2 MinGW64 终端中执行：
