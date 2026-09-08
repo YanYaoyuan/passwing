@@ -28,7 +28,11 @@ public:
     }
 
 protected:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *event) override {
+#else
     void enterEvent(QEvent *event) override {
+#endif
         if (event->type() == QEvent::Enter) {
             animateSize(defaultSize + QSize(10, 10)); // 放大按钮
             updateIconSize(iconSize + QSize(10, 10)); // 放大图标

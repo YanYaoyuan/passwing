@@ -47,7 +47,11 @@ protected:
         }
     }
 
-    void enterEvent(QEvent *event)override {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *event) override {
+#else
+    void enterEvent(QEvent *event) override {
+#endif
         hovered = true;
         update(); // 重新绘制
         QPushButton::enterEvent(event);
