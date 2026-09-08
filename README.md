@@ -109,8 +109,6 @@ theoreticalFramework/  理论说明文档
 
 ## 运行注意事项
 
-- FUN3D 本地运行需要 `mpiexec` 位于 `PATH` 中，并能找到 Windows 下的
-  `nodet_mpi.exe` 或 Linux 下的 `nodet_mpi`。
 - 部分模型库和算例依赖外部数据文件；若未随仓库提供，相应功能会提示文件缺失，
   但不影响主程序启动。
 - Windows 下不要混用 MSVC 与 MinGW 编译的库。
