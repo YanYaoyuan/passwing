@@ -117,17 +117,29 @@ cmake --build --preset debug --parallel
 ## 目录结构
 
 ```text
-AirfoilClass/          翼型设计与分析
-WingClass/             机翼设计与分析
-AirPlaneClass/         飞机设计与稳定性分析
-propellersClass/       螺旋桨设计与分析
-geometryClass/         几何模型及模型库
-saas/                  CFD、网格、任务和结果查看
-PublicClass/           通用数据、数学和绘图组件
-publicWidgetClass/     通用 Qt 控件
-resoure/               Qt 资源文件
-theoreticalFramework/  理论说明文档
+src/
+  app/                  程序入口与主窗口
+  airfoil/              翼型设计、分析与优化
+  wing/                 机翼设计、VLM 与优化
+  aircraft/             飞机设计、稳定性与整机分析
+  propeller/            螺旋桨设计、BEMT 与 VLM
+  common/               公共数据、数学、文件和绘图设施
+  widgets/              可复用 Qt 控件
+  geometry/             几何模型及 VTK 加载
+  dynamics/             动力学模型
+  chat/                 对话界面
+  saas/                 CFD、网格、任务和结果查看
+  help/                 桌面帮助集成
+cmake/                  依赖发现和编译选项
+resoure/                Qt 资源文件（保留历史拼写）
+libaries/               翼型与螺旋桨数据（保留历史拼写）
+setting/                运行配置
+help/                   HTML 帮助及媒体素材
+theoreticalFramework/   理论说明文档
 ```
+
+模块边界、依赖方向和新增代码约定见
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## 运行注意事项
 
