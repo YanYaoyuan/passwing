@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无人机介绍</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            padding-top: 30px; /* 为了避免导航栏遮挡内容 */
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        /* 顶部导航栏 */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000; /* 确保导航栏在最上层 */
+        }
+
+        header .logo {
+            font-size: 24px;
+            float: left;
+        }
+
+        header nav {
+            float: right;
+        }
+
+        header nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        header nav ul li {
+            display: inline;
+            margin-left: 20px;
+        }
+
+        header nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+
+        .hero {
+            background: url('hero.jpg') no-repeat center center/cover;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .hero-content h2 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+        }
+
+        /* 无人机特点 */
+        .features {
+            padding: 20px 0; /* 减少上下留白 */
+        }
+
+        .features .feature {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .features img {
+            max-width: 100px;
+            margin-bottom: 10px;
+        }
+
+        /* 技术规格 */
+        .specs {
+            background-color: #f8f9fa;
+            padding: 50px 0;
+        }
+
+        .specs table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .specs table th, .specs table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .specs table th {
+            background-color: #f1f1f1;
+        }
+
+        /* 应用场景 */
+        .scenarios {
+            padding: 50px 0;
+        }
+
+        .scenarios .scenario {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .scenarios img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        footer .social-media {
+            list-style: none;
+            padding: 0;
+        }
+
+        footer .social-media li {
+            display: inline;
+            margin: 0 10px;
+        }
+
+        footer .social-media a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header>
+        <div class="container">
+            <h1 class="logo">无人机品牌</h1>
+            <nav>
+                <ul>
+                    <li><a href="#hero">主页</a></li>
+                    <li><a href="#features">产品介绍</a></li>
+                    <li><a href="#specs">技术规格</a></li>
+                    <li><a href="#scenarios">应用场景</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <h2>探索未来的飞行科技</h2>
+            <p>体验我们最先进的无人机，开创无限可能。</p>
+        </div>
+    </section>
+
+    <!-- 无人机特点 -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>无人机特点</h2>
+            <div class="feature">
+                <img src="feature1.jpg" alt="高清摄像头">
+                <h3>高清摄像头</h3>
+                <p>拍摄清晰细致的图像和视频，无论是在白天还是夜晚。</p>
+            </div>
+            <div class="feature">
+                <img src="feature2.jpg" alt="长续航时间">
+                <h3>长续航时间</h3>
+                <p>单次充电最长可飞行60分钟，满足各种拍摄需求。</p>
+            </div>
+            <div class="feature">
+                <img src="feature3.jpg" alt="智能避障">
+                <h3>智能避障</h3>
+                <p>内置先进的传感器，实时监测周围环境，避免障碍物。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术规格 -->
+    <section id="specs" class="specs">
+        <div class="container">
+            <h2>技术规格</h2>
+            <table>
+                <tr>
+                    <th>参数</th>
+                    <th>规格</th>
+                </tr>
+                <tr>
+                    <td>飞行时间</td>
+                    <td>最长60分钟</td>
+                </tr>
+                <tr>
+                    <td>最大飞行距离</td>
+                    <td>5公里</td>
+                </tr>
+                <tr>
+                    <td>重量</td>
+                    <td>1.2公斤</td>
+                </tr>
+                <tr>
+                    <td>摄像头</td>
+                    <td>4K高清</td>
+                </tr>
+                <tr>
+                    <td>翼型</td>
+                    <td>弯曲翼型</td>
+                </tr>
+                <tr>
+                    <td>展弦比</td>
+                    <td>6.5</td>
+                </tr>
+                <tr>
+                    <td>翼载荷</td>
+                    <td>250克/平方米</td>
+                </tr>
+                <tr>
+                    <td>翼展</td>
+                    <td>1.5米</td>
+                </tr>
+                <tr>
+                    <td>翼面积</td>
+                    <td>2平方米</td>
+                </tr>
+                <tr>
+                    <td>长度</td>
+                    <td>1.2米</td>
+                </tr>
+                <tr>
+                    <td>高度</td>
+                    <td>0.4米</td>
+                </tr>
+                <tr>
+                    <td>起飞重量</td>
+                    <td>2.5公斤</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- 应用场景 -->
+    <section id="scenarios" class="scenarios">
+        <div class="container">
+            <h2>应用场景</h2>
+            <div class="scenario">
+                <img src="scenario1.jpg" alt="农业监测">
+                <h3>农业监测</h3>
+                <p>帮助农民实时监控作物生长情况，提高产量和效率。</p>
+            </div>
+            <div class="scenario">
+                <img src="scenario2.jpg" alt="电影拍摄">
+                <h3>电影拍摄</h3>
+                <p>为电影和广告拍摄提供高质量的空中镜头和动态画面。</p>
+            </div>
+            <div class="scenario">
+                <img src="scenario3.jpg" alt="测绘勘察">
+                <h3>测绘勘察</h3>
+                <p>进行地形勘测和地图制作，提供精准的数据支持。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 无人机品牌. 保留所有权利。</p>
+            <ul class="social-media">
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">Instagram</a></li>
+            </ul>
+        </div>
+    </footer>
+</body>
+</html>

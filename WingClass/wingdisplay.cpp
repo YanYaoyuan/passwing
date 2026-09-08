@@ -8,8 +8,6 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QtCore/QTextStream>
-#include <QtCharts/QLegend>
-#include <QtCharts/QLegendMarker>
 #include <QApplication>
 #include <QButtonGroup>
 #include <iostream>
@@ -56,13 +54,13 @@ wingDisplay::wingDisplay(QWidget *parent)
     connect(defineAirfoil,&airfoilDisplay::emitClicked,this,&wingDisplay::resetAirfoilData);
 
     //chart左键
-    QObject::connect(chartViewWA,&MyChartView::mouseRightLeftPress,this,&wingDisplay::showChartAMenu);
-    QObject::connect(chartViewWB,&MyChartView::mouseRightLeftPress,this,&wingDisplay::showChartBMenu);
-    QObject::connect(chartViewWC,&MyChartView::mouseRightLeftPress,this,&wingDisplay::showChartCMenu);
-    QObject::connect(chartViewWD,&MyChartView::mouseRightLeftPress,this,&wingDisplay::showChartDMenu);
-    QObject::connect(spanChartView,&MyChartView::mouseRightLeftPress,this,&wingDisplay::showSpanChartMenu);
+    QObject::connect(chartViewWA,&PlotWidget::mouseRightLeftPress,this,&wingDisplay::showChartAMenu);
+    QObject::connect(chartViewWB,&PlotWidget::mouseRightLeftPress,this,&wingDisplay::showChartBMenu);
+    QObject::connect(chartViewWC,&PlotWidget::mouseRightLeftPress,this,&wingDisplay::showChartCMenu);
+    QObject::connect(chartViewWD,&PlotWidget::mouseRightLeftPress,this,&wingDisplay::showChartDMenu);
+    QObject::connect(spanChartView,&PlotWidget::mouseRightLeftPress,this,&wingDisplay::showSpanChartMenu);
 
-    connect(iterViewA,&MyChartView::chartResized,this,&wingDisplay::updateOptimizationTextItem);
+    connect(iterViewA,&PlotWidget::chartResized,this,&wingDisplay::updateOptimizationTextItem);
     //进度条更新
 
 
@@ -159,10 +157,10 @@ void wingDisplay::addWingData(wingDefinition &newWingData){
 
     colorArray.append(color);
     resultPenArray.append(0);
-    QLineSeries *seriesA = new QLineSeries;
-    QLineSeries *seriesB = new QLineSeries;
-    QLineSeries *seriesC = new QLineSeries;
-    QLineSeries *seriesD = new QLineSeries;
+    PlotSeries *seriesA = new PlotSeries;
+    PlotSeries *seriesB = new PlotSeries;
+    PlotSeries *seriesC = new PlotSeries;
+    PlotSeries *seriesD = new PlotSeries;
 
 
     chartWA->addSeries(seriesA);
@@ -263,11 +261,6 @@ void wingDisplay::addWingData(wingDefinition &newWingData){
     optRangeChange(wingIndex);//刷新模型优化参数
 
     wingIndex++;
-
-    connect(seriesA,&QLineSeries::hovered,this,&wingDisplay::showChartCoordA);
-    connect(seriesB,&QLineSeries::hovered,this,&wingDisplay::showChartCoordB);
-    connect(seriesC,&QLineSeries::hovered,this,&wingDisplay::showChartCoordC);
-    connect(seriesD,&QLineSeries::hovered,this,&wingDisplay::showChartCoordD);
 
     connect(solver,&wingVLM::emitProgressValue,this,&wingDisplay::changeProgressUpdate);
 
@@ -791,17 +784,17 @@ void wingDisplay::initialSteup(){
 void wingDisplay::initialWingIterWidget() {
 
     iterVLayout = new QVBoxLayout();
-    iterChartA = new QChart();
-    iterChartB = new QChart();
-    iterViewA = new MyChartView(iterChartA);
-    iterViewB = new MyChartView(iterChartB);
-    iterXAxisA = new QValueAxis;
-    iterYAxisA = new QValueAxis;
-    iterXAxisB = new QValueAxis;
-    iterYAxisB = new QValueAxis;
-    iterSeriesA = new QLineSeries;
-    iterSeriesB = new QLineSeries;
-    iterSeriesC = new QLineSeries;
+    iterChartA = new PlotWidget();
+    iterChartB = new PlotWidget();
+    iterViewA = iterChartA;
+    iterViewB = iterChartB;
+    iterXAxisA = new PlotAxis;
+    iterYAxisA = new PlotAxis;
+    iterXAxisB = new PlotAxis;
+    iterYAxisB = new PlotAxis;
+    iterSeriesA = new PlotSeries;
+    iterSeriesB = new PlotSeries;
+    iterSeriesC = new PlotSeries;
 
     iterViewA->textItem->setFont(QFont("Arial",18));
     updateOptimizationTextItem(iterViewA->getRealSize().width() - 100,50);
@@ -1542,16 +1535,14 @@ void wingDisplay::initialChoiceDragDialog(){
 }
 
 void wingDisplay::initialChartWA(){
-    chartWA = new QChart();
-    chartViewWA = new MyChartView(chartWA,rChartMenu);
+    chartWA = new PlotWidget();
+    chartViewWA = chartWA;
     chartViewWA->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    toolTipA = new Callout(chartWA);
-
     chartWA->setBackgroundBrush(Qt::NoBrush);
 
 
-    axisXWA = new QValueAxis;
-    axisYWA = new QValueAxis;
+    axisXWA = new PlotAxis;
+    axisYWA = new PlotAxis;
 
 
 
@@ -1570,7 +1561,7 @@ void wingDisplay::initialChartWA(){
     axisYWA->setTitleText(axisYName[0]);
     chartViewWA->hide();
     chartWA->setTitle(titleName[0]);
-    autoSeriesA = new QLineSeries;
+    autoSeriesA = new PlotSeries;
     chartWA->addSeries(autoSeriesA);
     autoSeriesA->attachAxis(axisXWA);
     autoSeriesA->attachAxis(axisYWA);
@@ -1580,19 +1571,17 @@ void wingDisplay::initialChartWA(){
     pen.setColor(Qt::red);
     pen.setWidth(2);
     autoSeriesA->setPen(pen);
-    //chartWA->legend()->setVisible(false);
+    chartWA->legend()->setVisible(true);
 }
 void wingDisplay::initialChartWB(){
-    chartWB = new QChart();
-    chartViewWB = new MyChartView(chartWB,rChartMenu);
+    chartWB = new PlotWidget();
+    chartViewWB = chartWB;
     chartViewWB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chartWB->setBackgroundBrush(Qt::NoBrush);
 
-    toolTipB = new Callout(chartWB);
 
-
-    axisXWB = new QValueAxis;
-    axisYWB = new QValueAxis;
+    axisXWB = new PlotAxis;
+    axisYWB = new PlotAxis;
     chartViewWB->setRenderHint(QPainter::Antialiasing);
     //chartViewB->setBackgroundBrush(QBrush(colors[5]));
     //chartViewWB->setStyleSheet(chartViewBackGroundStyle);
@@ -1609,7 +1598,7 @@ void wingDisplay::initialChartWB(){
     chartViewWB->hide();
     chartWB->setTitle(titleName[1]);
 
-    autoSeriesB = new QLineSeries;
+    autoSeriesB = new PlotSeries;
     chartWB->addSeries(autoSeriesB);
     autoSeriesB->attachAxis(axisXWB);
     autoSeriesB->attachAxis(axisYWB);
@@ -1619,19 +1608,17 @@ void wingDisplay::initialChartWB(){
     pen.setColor(Qt::red);
     pen.setWidth(2);
     autoSeriesB->setPen(pen);
-    //chartWB->legend()->setVisible(false);
+    chartWB->legend()->setVisible(true);
 }
 void wingDisplay::initialChartWC(){
-    chartWC = new QChart();
-    chartViewWC = new MyChartView(chartWC,rChartMenu);
+    chartWC = new PlotWidget();
+    chartViewWC = chartWC;
     chartViewWC->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chartWC->setBackgroundBrush(Qt::NoBrush);
 
-    toolTipC = new Callout(chartWC);
 
-
-    axisXWC = new QValueAxis;
-    axisYWC = new QValueAxis;
+    axisXWC = new PlotAxis;
+    axisYWC = new PlotAxis;
     chartViewWC->setRenderHint(QPainter::Antialiasing);
     //chartViewB->setBackgroundBrush(QBrush(colors[5]));
     //chartViewWC->setStyleSheet(chartViewBackGroundStyle);
@@ -1648,12 +1635,12 @@ void wingDisplay::initialChartWC(){
     chartViewWC->hide();
     chartWC->setTitle(titleName[2]);
 
-    autoSeriesC = new QLineSeries;
+    autoSeriesC = new PlotSeries;
     chartWC->addSeries(autoSeriesC);
     autoSeriesC->attachAxis(axisXWC);
     autoSeriesC->attachAxis(axisYWC);
     removeSeriesLegendItem(chartWC,autoSeriesC);
-    //chartWC->legend()->setVisible(false);
+    chartWC->legend()->setVisible(true);
     QPen pen;
     pen.setStyle(Qt::DashLine);
     pen.setColor(Qt::red);
@@ -1661,16 +1648,14 @@ void wingDisplay::initialChartWC(){
     autoSeriesC->setPen(pen);
 }
 void wingDisplay::initialChartWD(){
-    chartWD = new QChart();
-    chartViewWD = new MyChartView(chartWD,rChartMenu);
+    chartWD = new PlotWidget();
+    chartViewWD = chartWD;
     chartViewWD->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chartWD->setBackgroundBrush(Qt::NoBrush);
 
-    toolTipD = new Callout(chartWD);
 
-
-    axisXWD = new QValueAxis;
-    axisYWD = new QValueAxis;
+    axisXWD = new PlotAxis;
+    axisYWD = new PlotAxis;
     chartViewWD->setRenderHint(QPainter::Antialiasing);
     //chartViewB->setBackgroundBrush(QBrush(colors[5]));
     //chartViewWD->setStyleSheet(chartViewBackGroundStyle);
@@ -1687,12 +1672,12 @@ void wingDisplay::initialChartWD(){
     chartViewWD->hide();
     chartWD->setTitle(titleName[3]);
 
-    autoSeriesD = new QLineSeries;
+    autoSeriesD = new PlotSeries;
     chartWD->addSeries(autoSeriesD);
     autoSeriesD->attachAxis(axisXWD);
     autoSeriesD->attachAxis(axisYWD);
     removeSeriesLegendItem(chartWD,autoSeriesD);
-    //chartWD->legend()->setVisible(false);
+    chartWD->legend()->setVisible(true);
     QPen pen;
     pen.setStyle(Qt::DashLine);
     pen.setColor(Qt::red);
@@ -1700,12 +1685,12 @@ void wingDisplay::initialChartWD(){
     autoSeriesD->setPen(pen);
 }
 void wingDisplay::initialSpanChart(){
-    spanChart = new QChart();
-    spanChartView = new MyChartView(spanChart,spanRMenu);
-    spanSeriesA = new QLineSeries;
-    spanSeriesB = new QLineSeries;
-    spanXAxis = new QValueAxis;
-    spanYAxis = new QValueAxis;
+    spanChart = new PlotWidget();
+    spanChartView = spanChart;
+    spanSeriesA = new PlotSeries;
+    spanSeriesB = new PlotSeries;
+    spanXAxis = new PlotAxis;
+    spanYAxis = new PlotAxis;
 
 
     spanChart->addSeries(spanSeriesA);
@@ -1726,7 +1711,7 @@ void wingDisplay::initialSpanChart(){
     spanSeriesA->attachAxis(spanYAxis);
     spanSeriesB->attachAxis(spanXAxis);
     spanSeriesB->attachAxis(spanYAxis);
-    spanChart->legend()->hide();
+    spanChart->legend()->setVisible(false);
 
     spanChart->setTitle(titleName[9]);
 
@@ -2462,58 +2447,6 @@ void wingDisplay::showSeriesTypeDialog(QTreeWidgetItem* item, int column){
     }
 
 }
-void wingDisplay::showChartCoordA(const QPointF& point,bool state){
-    if(state){
-        QString xText = axisXName[chartTypeIndexArray[0]] + ": " + QString::number(point.x(),'f',3) + "\n";
-        QString yText = axisYName[chartTypeIndexArray[0]] + ": " + QString::number(point.y(),'f',3);
-        toolTipA->setText(xText + yText);
-        toolTipA->setAnchor(point);
-        toolTipA->setZValue(11);
-        toolTipA->updateGeometry();
-        toolTipA->show();
-    }else{
-        toolTipA->hide();
-    }
-}
-void wingDisplay::showChartCoordB(const QPointF& point,bool state){
-    if(state){
-        QString xText = axisXName[chartTypeIndexArray[1]] + ": " + QString::number(point.x(),'f',3) + "\n";
-        QString yText = axisYName[chartTypeIndexArray[1]] + ": " + QString::number(point.y(),'f',3);
-        toolTipB->setText(xText + yText);
-        toolTipB->setAnchor(point);
-        toolTipB->setZValue(11);
-        toolTipB->updateGeometry();
-        toolTipB->show();
-    }else{
-        toolTipB->hide();
-    }
-}
-void wingDisplay::showChartCoordC(const QPointF& point,bool state){
-    if(state){
-        QString xText = axisXName[chartTypeIndexArray[2]] + ": " + QString::number(point.x(),'f',3) + "\n";
-        QString yText = axisYName[chartTypeIndexArray[2]] + ": " + QString::number(point.y(),'f',3);
-        toolTipC->setText(xText + yText);
-        toolTipC->setAnchor(point);
-        toolTipC->setZValue(11);
-        toolTipC->updateGeometry();
-        toolTipC->show();
-    }else{
-        toolTipC->hide();
-    }
-}
-void wingDisplay::showChartCoordD(const QPointF& point,bool state){
-    if(state){
-        QString xText = axisXName[chartTypeIndexArray[3]] + ": " + QString::number(point.x(),'f',3) + "\n";
-        QString yText = axisYName[chartTypeIndexArray[3]] + ": " + QString::number(point.y(),'f',3);
-        toolTipD->setText(xText + yText);
-        toolTipD->setAnchor(point);
-        toolTipD->setZValue(11);
-        toolTipD->updateGeometry();
-        toolTipD->show();
-    }else{
-        toolTipD->hide();
-    }
-}
 void wingDisplay::showChartAMenu(){
     chartIndex = 0;
     for (QAction *act : rChartMenu->actions()) {
@@ -3180,10 +3113,10 @@ void wingDisplay::saveWingData(){
 
         colorArray.append(color);
         resultPenArray.append(0);
-        QLineSeries *seriesA = new QLineSeries;
-        QLineSeries *seriesB = new QLineSeries;
-        QLineSeries *seriesC = new QLineSeries;
-        QLineSeries *seriesD = new QLineSeries;
+        PlotSeries *seriesA = new PlotSeries;
+        PlotSeries *seriesB = new PlotSeries;
+        PlotSeries *seriesC = new PlotSeries;
+        PlotSeries *seriesD = new PlotSeries;
 
 
         chartWA->addSeries(seriesA);
@@ -3289,10 +3222,6 @@ void wingDisplay::saveWingData(){
 
 
 
-        connect(seriesA,&QLineSeries::hovered,this,&wingDisplay::showChartCoordA);
-        connect(seriesB,&QLineSeries::hovered,this,&wingDisplay::showChartCoordB);
-        connect(seriesC,&QLineSeries::hovered,this,&wingDisplay::showChartCoordC);
-        connect(seriesD,&QLineSeries::hovered,this,&wingDisplay::showChartCoordD);
         connect(solver,&wingVLM::emitProgressValue,this,&wingDisplay::changeProgressUpdate);
 
         wingChoiceIndex = wingIndex;
@@ -3851,14 +3780,12 @@ void wingDisplay::updateWingList(QVector<wingDefinition>&wing){
             delete wingResultSeriesB[i];
             delete wingResultSeriesC[i];
             delete wingResultSeriesD[i];
-            delete wingResultSeriesE[i];
         }
         wingTreeItemArray.clear(); // 清空 QVector
         wingResultSeriesA.clear();
         wingResultSeriesB.clear();
         wingResultSeriesC.clear();
         wingResultSeriesD.clear();
-        wingResultSeriesE.clear();
         resultArray.clear();
         wingSettingArray.clear();
         optRealSettingArray.clear();
@@ -3920,7 +3847,7 @@ void wingDisplay::updateListData(){
 
     emit emitList(wingDataArray,tailDataArray);
 }
-void wingDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seriesList) {
+void wingDisplay::updateAxes(PlotWidget *chart, const QVector<PlotSeries*> &seriesList) {
     if (seriesList.isEmpty()) return;
 
     // 初始化数据范围，设置为一个极端值以便于后续比较
@@ -3930,7 +3857,7 @@ void wingDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seriesL
     qreal maxY = std::numeric_limits<qreal>::lowest();
 
     // 遍历所有曲线数据，计算总体范围
-    for (QLineSeries *series : seriesList) {
+    for (PlotSeries *series : seriesList) {
         if (series->points().isEmpty()) continue; // 如果当前系列没有点，则跳过
 
         for (const QPointF &point : series->points()) {
@@ -3959,12 +3886,12 @@ void wingDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seriesL
     maxY += yMargin;
 
     // 设置新的坐标轴范围
-    QList<QAbstractAxis*> axesX = chart->axes(Qt::Horizontal);
-    QList<QAbstractAxis*> axesY = chart->axes(Qt::Vertical);
+    QVector<PlotAxis*> axesX = chart->axes(Qt::Horizontal);
+    QVector<PlotAxis*> axesY = chart->axes(Qt::Vertical);
 
     if (!axesX.isEmpty() && !axesY.isEmpty()) {
-        QValueAxis *axisX = qobject_cast<QValueAxis*>(axesX.first());
-        QValueAxis *axisY = qobject_cast<QValueAxis*>(axesY.first());
+        PlotAxis *axisX = axesX.first();
+        PlotAxis *axisY = axesY.first();
 
         if (axisX && axisY) {
             axisX->setRange(minX, maxX);
@@ -5524,7 +5451,7 @@ bool wingDisplay::checkOptSetting(){
     return true;
 
 }
-void wingDisplay::exportChartData(QChart *chart) {
+void wingDisplay::exportChartData(PlotWidget *chart) {
     QString fileName = QFileDialog::getSaveFileName(nullptr, "Save Data", "", "Text Files (*.txt)");
     if (!fileName.isEmpty()) {
         QFile file(fileName);
@@ -5541,9 +5468,8 @@ void wingDisplay::exportChartData(QChart *chart) {
 
             // 遍历图表中的所有系列
             const auto seriesList = chart->series();
-            for (const QAbstractSeries *series : seriesList) {
-                const QLineSeries *lineSeries = qobject_cast<const QLineSeries *>(series);
-                if (lineSeries) {
+            for (const PlotSeries *lineSeries : seriesList) {
+                if (lineSeries && !lineSeries->points().isEmpty()) {
                     // 写入系列名称作为标头
                     stream << lineSeries->name() << "\n";
                     // 写入表头（使用坐标轴标签）
@@ -5760,15 +5686,9 @@ void wingDisplay::clearDataPointD()
     updateAxes(chartWD,wingResultSeriesD);
 
 }
-void wingDisplay::removeSeriesLegendItem(QChart *chart, QLineSeries *series) {
-    // Get all legend markers for the given series
-    QList<QLegendMarker *> markers = chart->legend()->markers(series);
-
-    // Iterate through all legend markers
-    for (QLegendMarker *marker : markers) {
-        // Hide the legend marker
-        marker->setVisible(false);
-    }
+void wingDisplay::removeSeriesLegendItem(PlotWidget *chart, PlotSeries *series) {
+    Q_UNUSED(chart)
+    series->setLegendVisible(false);
 }
 int wingDisplay::getAirfoilIndex(const QString tmp){
     int index = 0;

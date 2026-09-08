@@ -9,7 +9,6 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <QFont>
-#include <QAreaSeries>
 #include "PublicClass/myfile.h"
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
@@ -36,20 +35,20 @@ airfoilDisplay::airfoilDisplay() {
 
 
 
-    QObject::connect(resultChartViewA,&MyChartView::mouseRightLeftPress,this,&airfoilDisplay::showRChartAMenu);
-    QObject::connect(resultChartViewB,&MyChartView::mouseRightLeftPress,this,&airfoilDisplay::showRChartBMenu);
-    QObject::connect(dragInterViewA,&MyChartView::mouseRightLeftPress,this,&airfoilDisplay::showInterChartMenu);
-    QObject::connect(resultChartViewA,&MyChartView::mousePositionChanged,this,&airfoilDisplay::updateResultAMousePosition);
-    QObject::connect(resultChartViewB,&MyChartView::mousePositionChanged,this,&airfoilDisplay::updateResultBMousePosition);
+    QObject::connect(resultChartViewA,&AirfoilPlot::mouseRightLeftPress,this,&airfoilDisplay::showRChartAMenu);
+    QObject::connect(resultChartViewB,&AirfoilPlot::mouseRightLeftPress,this,&airfoilDisplay::showRChartBMenu);
+    QObject::connect(dragInterViewA,&AirfoilPlot::mouseRightLeftPress,this,&airfoilDisplay::showInterChartMenu);
+    QObject::connect(resultChartViewA,&AirfoilPlot::mousePositionChanged,this,&airfoilDisplay::updateResultAMousePosition);
+    QObject::connect(resultChartViewB,&AirfoilPlot::mousePositionChanged,this,&airfoilDisplay::updateResultBMousePosition);
 
 
-    QObject::connect(designChartViewA,&MyChartView::mousePositionChanged,this,&airfoilDisplay::updateDesignMousePosition);
-    QObject::connect(designChartViewA,&MyChartView::chartResized,this,&airfoilDisplay::updateDesignTextItem);
-    QObject::connect(designChartViewA,&MyChartView::mousePressBegin,this,&airfoilDisplay::getMousePressBeginPosition);
-    QObject::connect(designChartViewA,&MyChartView::mouseReleaseEnd,this,&airfoilDisplay::getMouseReleaseEndPosition);
-    QObject::connect(designChartViewA,&MyChartView::mouseRightLeftPress,this,&airfoilDisplay::showDesignChartMenu);
+    QObject::connect(designChartViewA,&AirfoilPlot::mousePositionChanged,this,&airfoilDisplay::updateDesignMousePosition);
+    QObject::connect(designChartViewA,&AirfoilPlot::chartResized,this,&airfoilDisplay::updateDesignTextItem);
+    QObject::connect(designChartViewA,&AirfoilPlot::mousePressBegin,this,&airfoilDisplay::getMousePressBeginPosition);
+    QObject::connect(designChartViewA,&AirfoilPlot::mouseReleaseEnd,this,&airfoilDisplay::getMouseReleaseEndPosition);
+    QObject::connect(designChartViewA,&AirfoilPlot::mouseRightLeftPress,this,&airfoilDisplay::showDesignChartMenu);
 
-    QObject::connect(optimizationChartViewA,&MyChartView::chartResized,this,&airfoilDisplay::updateOptimizationTextItem);
+    QObject::connect(optimizationChartViewA,&AirfoilPlot::chartResized,this,&airfoilDisplay::updateOptimizationTextItem);
 
     connect(this,&airfoilDisplay::emitOptimizationUI,this,&airfoilDisplay::updateOptimizationUI);
 
@@ -104,9 +103,9 @@ airfoilDisplay::airfoilDisplay(const int num){
     initialSetup();
     initialModifyAirfoilDialogCST();
     designModel = new airfoilDesign(cstNum);//机翼设计用
-    QObject::connect(chartViewA,&MyChartView::mousePositionChanged,this,&airfoilDisplay::updateMousePosition);
-    QObject::connect(chartViewA,&MyChartView::mousePressBegin,this,&airfoilDisplay::getMousePressBeginPosition);
-    QObject::connect(chartViewA,&MyChartView::mouseReleaseEnd,this,&airfoilDisplay::getMouseReleaseEndPosition);
+    QObject::connect(chartViewA,&AirfoilPlot::mousePositionChanged,this,&airfoilDisplay::updateMousePosition);
+    QObject::connect(chartViewA,&AirfoilPlot::mousePressBegin,this,&airfoilDisplay::getMousePressBeginPosition);
+    QObject::connect(chartViewA,&AirfoilPlot::mouseReleaseEnd,this,&airfoilDisplay::getMouseReleaseEndPosition);
 
 }
 
@@ -120,7 +119,7 @@ void airfoilDisplay::setAirfoil(QVector<QVector<double>>&airfoilData,QVector<dou
         drawAirfoil();
     }
 }
-void airfoilDisplay::exportChartData(QChart *chart) {
+void airfoilDisplay::exportChartData(AirfoilPlot *chart) {
     QString fileName = QFileDialog::getSaveFileName(nullptr, "Save Data", "", "Text Files (*.txt)");
     if (!fileName.isEmpty()) {
         QFile file(fileName);
@@ -137,8 +136,7 @@ void airfoilDisplay::exportChartData(QChart *chart) {
 
             // 遍历图表中的所有系列
             const auto seriesList = chart->series();
-            for (const QAbstractSeries *series : seriesList) {
-                const QLineSeries *lineSeries = qobject_cast<const QLineSeries *>(series);
+            for (const AirfoilPlotSeries *lineSeries : seriesList) {
                 if (lineSeries && !lineSeries->points().isEmpty()) {
                     // 写入系列名称作为标头
                     stream << lineSeries->name() << "\n";
@@ -304,29 +302,29 @@ void airfoilDisplay::initialAirfoilOptimizationWidget(){
 
     optimizationGLayoutB2 = new QGridLayout(optimizationToolBox);
 
-    optimizationChartA = new QChart();
-    iterateChart = new QChart();
-    cpxchart = new QChart();
+    optimizationChartA = new AirfoilPlot();
+    iterateChart = new AirfoilPlot();
+    cpxchart = new AirfoilPlot();
 
-    optimizationChartViewA = new MyChartView(optimizationChartA);
-    iterateView = new MyChartView(iterateChart);
-    cpxchartView = new MyChartView(cpxchart);
+    optimizationChartViewA = optimizationChartA;
+    iterateView = iterateChart;
+    cpxchartView = cpxchart;
 
     optimizationChartViewA->setRenderHint(QPainter::Antialiasing);
     iterateView->setRenderHint(QPainter::Antialiasing);
     cpxchartView->setRenderHint(QPainter::Antialiasing);
 
-    optimizationSeriesA = new QLineSeries();
-    iterateSeries = new QLineSeries();
-    oriCpxSeries = new QLineSeries();
-    optCpxSeries = new QLineSeries();
+    optimizationSeriesA = new AirfoilPlotSeries();
+    iterateSeries = new AirfoilPlotSeries();
+    oriCpxSeries = new AirfoilPlotSeries();
+    optCpxSeries = new AirfoilPlotSeries();
 
-    optimizationAxisXA = new QValueAxis;
-    optimizationAxisYA = new QValueAxis;
-    iterateAxAxis = new QValueAxis;
-    iterateAyAxis = new QValueAxis;
-    cpxAxAxis = new QValueAxis;
-    cpxAyAxis = new QValueAxis;
+    optimizationAxisXA = new AirfoilPlotAxis;
+    optimizationAxisYA = new AirfoilPlotAxis;
+    iterateAxAxis = new AirfoilPlotAxis;
+    iterateAyAxis = new AirfoilPlotAxis;
+    cpxAxAxis = new AirfoilPlotAxis;
+    cpxAyAxis = new AirfoilPlotAxis;
 
     optimizationAxisXA->setVisible(false);
     optimizationAxisYA->setVisible(false);
@@ -608,15 +606,15 @@ void airfoilDisplay::initialAirfoilDesignWidget(){
     designGLayoutB1 = new QGridLayout(designSettingBox);
     designGLayoutB2 = new QGridLayout(airfoilToolBox);
 
-    designChartA = new QChart();
-    resultChartA = new QChart();
-    resultChartB = new QChart();
+    designChartA = new AirfoilPlot();
+    resultChartA = new AirfoilPlot();
+    resultChartB = new AirfoilPlot();
 
 
 
-    designChartViewA = new MyChartView(designChartA);
-    resultChartViewA = new MyChartView(resultChartA);
-    resultChartViewB = new MyChartView(resultChartB);
+    designChartViewA = designChartA;
+    resultChartViewA = resultChartA;
+    resultChartViewB = resultChartB;
 
     designChartViewA->setRenderHint(QPainter::Antialiasing);
     resultChartViewA->setRenderHint(QPainter::Antialiasing);
@@ -626,30 +624,30 @@ void airfoilDisplay::initialAirfoilDesignWidget(){
 
 
 
-    designSeriesUpper = new QLineSeries();
-    designSeriesLower = new QLineSeries();
-    designScatterSeriesA = new QLineSeries();
-    designSeriesPointA = new QScatterSeries();
-    designSeriesPointB = new QScatterSeries();
-    transitionPoint = new QScatterSeries();
-    designPointA = new QScatterSeries();
-    designPointB = new QScatterSeries();
-    xblUpperSeries = new QLineSeries();
-    xblLowerSeries = new QLineSeries();
+    designSeriesUpper = new AirfoilPlotSeries();
+    designSeriesLower = new AirfoilPlotSeries();
+    designScatterSeriesA = new AirfoilPlotSeries();
+    designSeriesPointA = new AirfoilPlotSeries(true);
+    designSeriesPointB = new AirfoilPlotSeries(true);
+    transitionPoint = new AirfoilPlotSeries(true);
+    designPointA = new AirfoilPlotSeries(true);
+    designPointB = new AirfoilPlotSeries(true);
+    xblUpperSeries = new AirfoilPlotSeries();
+    xblLowerSeries = new AirfoilPlotSeries();
 
 
 
-    autoSeriesA = new QLineSeries;
-    autoSeriesB = new QLineSeries;
+    autoSeriesA = new AirfoilPlotSeries;
+    autoSeriesB = new AirfoilPlotSeries;
 
 
 
-    designAxisXA = new QValueAxis;
-    designAxisYA = new QValueAxis;
-    resultAxisXA = new QValueAxis;
-    resultAxisYA = new QValueAxis;
-    resultAxisXB = new QValueAxis;
-    resultAxisYB = new QValueAxis;
+    designAxisXA = new AirfoilPlotAxis;
+    designAxisYA = new AirfoilPlotAxis;
+    resultAxisXA = new AirfoilPlotAxis;
+    resultAxisYA = new AirfoilPlotAxis;
+    resultAxisXB = new AirfoilPlotAxis;
+    resultAxisYB = new AirfoilPlotAxis;
 
 
 
@@ -671,6 +669,7 @@ void airfoilDisplay::initialAirfoilDesignWidget(){
 
 
     designChartViewA->installEventFilter(this);
+    designChartViewA->setRangeDragEnabled(false);
 
     designChartA->addSeries(designSeriesUpper);
     designChartA->addSeries(designSeriesLower);
@@ -908,16 +907,16 @@ void airfoilDisplay::initialModifyAirfoilDialogCST(){
     modifyAirfoilDialog = new QDialog();
     gridLayoutA = new QGridLayout(modifyAirfoilDialog);
 
-    chartA = new QChart();
+    chartA = new AirfoilPlot();
     chartA->setBackgroundBrush(Qt::NoBrush);
 
-    chartViewA = new MyChartView(chartA);
+    chartViewA = chartA;
     chartViewA->setRenderHint(QPainter::Antialiasing);
     chartViewA->installEventFilter(this);
-    seriesA = new QLineSeries();
-    scatterSeries = new QLineSeries();
-    seriesCstPointA = new QScatterSeries();
-    seriesCstPointB = new QScatterSeries();
+    seriesA = new AirfoilPlotSeries();
+    scatterSeries = new AirfoilPlotSeries();
+    seriesCstPointA = new AirfoilPlotSeries(true);
+    seriesCstPointB = new AirfoilPlotSeries(true);
     chartA->addSeries(seriesA);
     chartA->addSeries(scatterSeries);
     chartA->addSeries(seriesCstPointA);
@@ -927,8 +926,8 @@ void airfoilDisplay::initialModifyAirfoilDialogCST(){
 
 
 
-    axisXA = new QValueAxis;
-    axisYA = new QValueAxis;
+    axisXA = new AirfoilPlotAxis;
+    axisYA = new AirfoilPlotAxis;
 
     axisXA->setRange(-0.1,1.1);
     axisYA->setRange(-0.25,0.25);
@@ -944,6 +943,7 @@ void airfoilDisplay::initialModifyAirfoilDialogCST(){
     seriesCstPointB->attachAxis(axisXA);
     seriesCstPointB->attachAxis(axisYA);
     chartA->legend()->setVisible(false);
+    chartA->setRangeDragEnabled(false);
 
 
     saveAirfoilButton = new QPushButton(modifyAirfoilDialog);
@@ -962,22 +962,22 @@ void airfoilDisplay::initialCheckCSTDialog(){
     checkCSTDialog = new QDialog();
     checkGridLayout = new QGridLayout(checkCSTDialog);
 
-    chartF = new QChart();
-    chartG = new QChart();
-    chartViewF = new QChartView(chartF);
-    chartViewG = new QChartView(chartG);
+    chartF = new AirfoilPlot();
+    chartG = new AirfoilPlot();
+    chartViewF = chartF;
+    chartViewG = chartG;
 
-    airfoilSeriesF = new QLineSeries();
-    airfoilSeriesG = new QLineSeries();
+    airfoilSeriesF = new AirfoilPlotSeries();
+    airfoilSeriesG = new AirfoilPlotSeries();
 
-    upperToleranceSeries = new QLineSeries();
-    lowerToleranceSeries = new QLineSeries();
+    upperToleranceSeries = new AirfoilPlotSeries();
+    lowerToleranceSeries = new AirfoilPlotSeries();
 
-    checkXAxis = new QValueAxis;
-    checkYAxis = new QValueAxis;
+    checkXAxis = new AirfoilPlotAxis;
+    checkYAxis = new AirfoilPlotAxis;
 
-    checkValueXAxis = new QValueAxis;
-    checkValueYAxis = new QValueAxis;
+    checkValueXAxis = new AirfoilPlotAxis;
+    checkValueYAxis = new AirfoilPlotAxis;
 
     checkXAxis->setTickCount(int(MINAXIS[7]));
     checkYAxis->setTickCount(int(MAXAXIS[7]));
@@ -1042,8 +1042,8 @@ void airfoilDisplay::initialCheckCSTDialog(){
 
     lowerToleranceSeries->attachAxis(checkValueXAxis);
     lowerToleranceSeries->attachAxis(checkValueYAxis);
-    chartF->legend()->hide();
-    chartG->legend()->hide();
+    chartF->legend()->setVisible(false);
+    chartG->legend()->setVisible(false);
 
 
     //connect(importAirfoilButton,SIGNAL(clicked()),this,SLOT(showLibary()));
@@ -1053,13 +1053,13 @@ void airfoilDisplay::initialCheckCSTDialog(){
 void airfoilDisplay::initialAirfoilBlendingDialog(){
     blendingDialog = new QDialog();
     blendingGLayout = new QGridLayout(blendingDialog);
-    blendingChart = new QChart();
-    blendingView = new MyChartView(blendingChart);
-    blendingSeriesA = new QLineSeries;
-    blendingSeriesB = new QLineSeries;
-    blendingSeriesC = new QLineSeries;
-    blendingAxisX = new QValueAxis;
-    blendingAxisY = new QValueAxis;
+    blendingChart = new AirfoilPlot();
+    blendingView = blendingChart;
+    blendingSeriesA = new AirfoilPlotSeries;
+    blendingSeriesB = new AirfoilPlotSeries;
+    blendingSeriesC = new AirfoilPlotSeries;
+    blendingAxisX = new AirfoilPlotAxis;
+    blendingAxisY = new AirfoilPlotAxis;
 
     blendingSlider = new QSlider(Qt::Horizontal);
 
@@ -1468,15 +1468,15 @@ void airfoilDisplay::initialInterDragWidget(){
     threadNumLabel = new QLabel("线程数量",dragInterWidget);threadNumEdit = new QLineEdit("10",dragInterWidget);
     interMethodLabel = new QLabel("插值模型",dragInterWidget);interMethodCombox = new QComboBox(dragInterWidget);
     iterTextEdit = new QTextEdit();
-    dragInterChartA = new QChart();
-    dragInterChartB = new QChart();
-    dragInterViewA = new MyChartView(dragInterChartA);
-    dragInterViewB = new MyChartView(dragInterChartB);
-    dragInterSeries = new QLineSeries();
-    dragInterAxisXA = new QValueAxis();
-    dragInterAxisYA = new QValueAxis();
-    dragInterAxisXB = new QValueAxis();
-    dragInterAxisYB = new QValueAxis();
+    dragInterChartA = new AirfoilPlot();
+    dragInterChartB = new AirfoilPlot();
+    dragInterViewA = dragInterChartA;
+    dragInterViewB = dragInterChartB;
+    dragInterSeries = new AirfoilPlotSeries();
+    dragInterAxisXA = new AirfoilPlotAxis();
+    dragInterAxisYA = new AirfoilPlotAxis();
+    dragInterAxisXB = new AirfoilPlotAxis();
+    dragInterAxisYB = new AirfoilPlotAxis();
     dragInterChartA->addAxis(dragInterAxisXA,Qt::AlignBottom);
     dragInterChartA->addAxis(dragInterAxisYA,Qt::AlignLeft);
     dragInterChartB->addAxis(dragInterAxisXB,Qt::AlignBottom);
@@ -1722,15 +1722,19 @@ void airfoilDisplay::changeDesignChartType(){
         if(xblLowerSeries->isVisible()){
             xblLowerSeries->setVisible(false);
             xblUpperSeries->setVisible(false);
-            upperAreaSeries->setVisible(false);
-            lowerAreaSeries->setVisible(false);
+            if (upperAreaSeries)
+                upperAreaSeries->setVisible(false);
+            if (lowerAreaSeries)
+                lowerAreaSeries->setVisible(false);
             designActionArray[6]->setText("显示边界层");
             //designActionArray[7]->setChecked(false);
         }else{
             xblLowerSeries->setVisible(true);
             xblUpperSeries->setVisible(true);
-            upperAreaSeries->setVisible(true);
-            lowerAreaSeries->setVisible(true);
+            if (upperAreaSeries)
+                upperAreaSeries->setVisible(true);
+            if (lowerAreaSeries)
+                lowerAreaSeries->setVisible(true);
             designActionArray[6]->setText("隐藏边界层");
             //designActionArray[7]->setChecked(true);
         }
@@ -1742,19 +1746,19 @@ void airfoilDisplay::changeDesignChartType(){
     }
 
 }
-void airfoilDisplay::adjustChartViewAspectRatio(QChartView *chartView) {
+void airfoilDisplay::adjustChartViewAspectRatio(AirfoilPlot *chartView) {
     if (!chartView || !chartView->chart()) return;
 
-    QChart *chart = chartView->chart();
-    QValueAxis *xAxis = nullptr;
-    QValueAxis *yAxis = nullptr;
+    AirfoilPlot *chart = chartView->chart();
+    AirfoilPlotAxis *xAxis = nullptr;
+    AirfoilPlotAxis *yAxis = nullptr;
 
     // Get the X and Y axes
-    foreach (QAbstractAxis* axis, chart->axes()) {
+    foreach (AirfoilPlotAxis* axis, chart->axes()) {
         if (axis->orientation() == Qt::Horizontal) {
-            xAxis = dynamic_cast<QValueAxis*>(axis);
+            xAxis = axis;
         } else if (axis->orientation() == Qt::Vertical) {
-            yAxis = dynamic_cast<QValueAxis*>(axis);
+            yAxis = axis;
         }
     }
 
@@ -1806,7 +1810,7 @@ void airfoilDisplay::changeInterResultType(){
     QAction *action = qobject_cast<QAction*>(sender());
     int index = action->property("actions").toInt();
     interActionIndex = index;
-    for (QLineSeries *series : dragSeriesArray) {
+    for (AirfoilPlotSeries *series : dragSeriesArray) {
         delete series; // 删除每个 QLineseries* 指针对象，释放内存
     }
     dragSeriesArray.clear(); // 清空容器
@@ -1972,7 +1976,7 @@ void airfoilDisplay::drawCheckCSTAirfoil(){
 }
 void airfoilDisplay::drawInterClResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.alphaData[i],data.clData[i]);
         }
@@ -1984,7 +1988,7 @@ void airfoilDisplay::drawInterClResult(const airfoilData &data){
 }
 void airfoilDisplay::drawInterCdResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.alphaData[i],data.cdData[i]);
         }
@@ -1996,7 +2000,7 @@ void airfoilDisplay::drawInterCdResult(const airfoilData &data){
 }
 void airfoilDisplay::drawInterKResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.alphaData[i],data.clData[i] / data.cdData[i]);
         }
@@ -2008,7 +2012,7 @@ void airfoilDisplay::drawInterKResult(const airfoilData &data){
 }
 void airfoilDisplay::drawInterPResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.alphaData[i],pow(data.clData[i],1.5) / data.cdData[i]);
         }
@@ -2020,7 +2024,7 @@ void airfoilDisplay::drawInterPResult(const airfoilData &data){
 }
 void airfoilDisplay::drawInterCmResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.alphaData[i],data.cmData[i]);
         }
@@ -2032,7 +2036,7 @@ void airfoilDisplay::drawInterCmResult(const airfoilData &data){
 }
 void airfoilDisplay::drawInterRResult(const airfoilData &data){
     if(!data.alphaData.isEmpty()){
-        QLineSeries *series = new QLineSeries;
+        AirfoilPlotSeries *series = new AirfoilPlotSeries;
         for(int i = 0;i<data.alphaData.length();i++){
             series->append(data.cdData[i],data.clData[i]);
         }
@@ -2175,8 +2179,8 @@ void airfoilDisplay::addNewAirfoil(const QVector<QVector<double>>&airfoil){
         connect(button4,&QPushButton::clicked,this,&airfoilDisplay::deleteAirfoilDesignButton);
 
 
-        QLineSeries *seriesA = new QLineSeries;
-        QLineSeries *seriesB = new QLineSeries;
+        AirfoilPlotSeries *seriesA = new AirfoilPlotSeries;
+        AirfoilPlotSeries *seriesB = new AirfoilPlotSeries;
         seriesA->setName(airfoilNameArray[airfoilIndex]);
         seriesB->setName(airfoilNameArray[airfoilIndex]);
         resultChartA->addSeries(seriesA);
@@ -2499,7 +2503,7 @@ void airfoilDisplay::startInterChoiceSolver(){
         interReValueArray.clear();
     }
     if(!dragSeriesArray.isEmpty()){
-        for(QLineSeries*series : dragSeriesArray)
+        for(AirfoilPlotSeries*series : dragSeriesArray)
             delete series;
         dragSeriesArray.clear();
     }
@@ -2974,7 +2978,7 @@ void airfoilDisplay::updateOptimizationUI(const int n,const QVector<QVector<doub
         optCpxIsChange = false;
     }
     //刷新坐标系
-    QVector<QLineSeries*>tmpSeriesArray;
+    QVector<AirfoilPlotSeries*>tmpSeriesArray;
     tmpSeriesArray.append(oriCpxSeries);
     tmpSeriesArray.append(optCpxSeries);
     updateAxes(cpxchart,tmpSeriesArray);
@@ -3053,7 +3057,7 @@ void airfoilDisplay::drawOptAirfoil(const QVector<QVector<double>>&airfoil){
         }
     }
 }
-void airfoilDisplay::drawCpxData(const QVector<double>&cpx,QLineSeries*series){
+void airfoilDisplay::drawCpxData(const QVector<double>&cpx,AirfoilPlotSeries*series){
     if(series->count() > 0)
         series->clear();
     for(int i = 0;i<cpx.length();i++){
@@ -3187,11 +3191,11 @@ void airfoilDisplay::updateBlAreaSeries()
 
 
 
-    // --- 2️⃣ 创建 QAreaSeries
+    // 创建 QCustomPlot 通道填充区域。
     // 上表面区域：xblUpperSeries 在上，designSeriesUpper 在下
-    upperAreaSeries = new QAreaSeries(xblUpperSeries, designSeriesUpper);
+    upperAreaSeries = new AirfoilPlotArea(xblUpperSeries, designSeriesUpper);
     // 下表面区域：designSeriesLower 在上，xblLowerSeries 在下
-    lowerAreaSeries = new QAreaSeries(designSeriesLower, xblLowerSeries);
+    lowerAreaSeries = new AirfoilPlotArea(designSeriesLower, xblLowerSeries);
 
     // --- 3️⃣ 设置颜色和透明度
     upperAreaSeries->setBrush(QColor(31, 119, 180, 80));  // 半透明蓝
@@ -4100,7 +4104,7 @@ void airfoilDisplay::updateDesignTextItem(const int x,const int y){
 }
 
 
-void airfoilDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seriesList) {
+void airfoilDisplay::updateAxes(AirfoilPlot *chart, const QVector<AirfoilPlotSeries*> &seriesList) {
     if (seriesList.isEmpty()) return;
 
     // 初始化数据范围，设置为一个极端值以便于后续比较
@@ -4110,7 +4114,7 @@ void airfoilDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seri
     qreal maxY = std::numeric_limits<qreal>::lowest();
 
     // 遍历所有曲线数据，计算总体范围
-    for (QLineSeries *series : seriesList) {
+    for (AirfoilPlotSeries *series : seriesList) {
         if (series->points().isEmpty()) continue; // 如果当前系列没有点，则跳过
 
         for (const QPointF &point : series->points()) {
@@ -4139,12 +4143,12 @@ void airfoilDisplay::updateAxes(QChart *chart, const QVector<QLineSeries*> &seri
     maxY += yMargin;
 
     // 设置新的坐标轴范围
-    QList<QAbstractAxis*> axesX = chart->axes(Qt::Horizontal);
-    QList<QAbstractAxis*> axesY = chart->axes(Qt::Vertical);
+    QVector<AirfoilPlotAxis*> axesX = chart->axes(Qt::Horizontal);
+    QVector<AirfoilPlotAxis*> axesY = chart->axes(Qt::Vertical);
 
     if (!axesX.isEmpty() && !axesY.isEmpty()) {
-        QValueAxis *axisX = qobject_cast<QValueAxis*>(axesX.first());
-        QValueAxis *axisY = qobject_cast<QValueAxis*>(axesY.first());
+        AirfoilPlotAxis *axisX = axesX.first();
+        AirfoilPlotAxis *axisY = axesY.first();
 
         if (axisX && axisY) {
             axisX->setRange(minX, maxX);
@@ -4622,7 +4626,7 @@ airfoilDisplay::~airfoilDisplay(){
         delete solver;
     for(airfoilDesign *solver:airfoilDesignModelArray)
         delete solver;
-    for(QLineSeries* series:dragSeriesArray)
+    for(AirfoilPlotSeries* series:dragSeriesArray)
         delete series;
     dragSeriesArray.clear();
 

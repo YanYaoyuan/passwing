@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助文档</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .section header {
+            background-color: #777;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        .section .content {
+            display: none;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+        .section .content a {
+            display: block;
+            padding: 5px;
+            color: #333;
+            text-decoration: none;
+        }
+        .section .content a:hover {
+            background-color: #ddd;
+        }
+        .section .content img {
+            max-width: 100%; /* 使图片适应父容器 */
+            height: auto;
+            display: block;
+            margin: 10px 0; /* 图片的上下外边距 */
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <header class="collapsible">主页</header>
+        <div class="content">
+            <p>主页的内容...</p>
+            <!-- 插入图片 -->
+            <img src="path/to/your/image.jpg" alt="描述图片的内容">
+        </div>
+    </div>
+
+    <!-- 其他部分保持不变 -->
+
+    <script>
+        document.querySelectorAll('.collapsible').forEach(header => {
+            header.addEventListener('click', () => {
+                // Toggle the content display
+                const content = header.nextElementSibling;
+                content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    </script>
+</body>
+</html>

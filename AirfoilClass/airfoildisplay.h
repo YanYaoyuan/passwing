@@ -2,12 +2,7 @@
 #define AIRFOILDISPLAY_H
 
 #include <QObject>
-#include <QChart>
 #include <QVector>
-#include <QLineSeries>
-#include <QScatterSeries>
-#include <QAreaSeries>
-#include <QValueAxis>
 #include <QGridLayout>
 #include <QDialog>
 #include <QComboBox>
@@ -22,7 +17,7 @@
 #include <QRadioButton>
 #include <QTextEdit>
 #include "airfoiloptimization.h"
-#include "PublicClass/mychartview.h"
+#include "PublicClass/airfoilplot.h"
 #include "AirfoilClass/airfoildesign.h"
 #include "AirfoilClass/airfoilsolve.h"
 #include "AirfoilClass/airfoillibary.h"
@@ -133,45 +128,45 @@ private:
     QLabel *xLabelTextC;               QLabel *yLabelTextC;
 
 
-    QChart *designChartA;
-    MyChartView *designChartViewA;
-    QLineSeries *designSeriesUpper;
-    QLineSeries *designSeriesLower;
-    QLineSeries *designScatterSeriesA;
-    QLineSeries *xblUpperSeries;
-    QLineSeries *xblLowerSeries;
+    AirfoilPlot *designChartA;
+    AirfoilPlot *designChartViewA;
+    AirfoilPlotSeries *designSeriesUpper;
+    AirfoilPlotSeries *designSeriesLower;
+    AirfoilPlotSeries *designScatterSeriesA;
+    AirfoilPlotSeries *xblUpperSeries;
+    AirfoilPlotSeries *xblLowerSeries;
 
-    QAreaSeries* upperAreaSeries = nullptr;
-    QAreaSeries* lowerAreaSeries = nullptr;
+    AirfoilPlotArea *upperAreaSeries = nullptr;
+    AirfoilPlotArea *lowerAreaSeries = nullptr;
 
 
-    QScatterSeries *designSeriesPointA;
-    QScatterSeries *designSeriesPointB;
+    AirfoilPlotSeries *designSeriesPointA;
+    AirfoilPlotSeries *designSeriesPointB;
 
     //后处理
-    QScatterSeries *transitionPoint;//转捩
-    QScatterSeries *designPointA;//设计点
-    QScatterSeries *designPointB;//设计点
+    AirfoilPlotSeries *transitionPoint;//转捩
+    AirfoilPlotSeries *designPointA;//设计点
+    AirfoilPlotSeries *designPointB;//设计点
 
-    QValueAxis *designAxisXA;
-    QValueAxis *designAxisYA;
+    AirfoilPlotAxis *designAxisXA;
+    AirfoilPlotAxis *designAxisYA;
     bool fontChangedA = false;
     bool fontChangedB = false;
     bool fontChangedC = false;
     bool isSolve = true;
-    QChart *resultChartA;
-    QChart *resultChartB;
-    MyChartView *resultChartViewA;
-    MyChartView *resultChartViewB;
-    QVector<QLineSeries*>resultSeriesA;
-    QVector<QLineSeries*>resultSeriesB;
-    QLineSeries *autoSeriesA;//添加对比点
-    QLineSeries *autoSeriesB;//添加对比点
+    AirfoilPlot *resultChartA;
+    AirfoilPlot *resultChartB;
+    AirfoilPlot *resultChartViewA;
+    AirfoilPlot *resultChartViewB;
+    QVector<AirfoilPlotSeries*>resultSeriesA;
+    QVector<AirfoilPlotSeries*>resultSeriesB;
+    AirfoilPlotSeries *autoSeriesA;//添加对比点
+    AirfoilPlotSeries *autoSeriesB;//添加对比点
 
-    QValueAxis *resultAxisXA;
-    QValueAxis *resultAxisYA;
-    QValueAxis *resultAxisXB;
-    QValueAxis *resultAxisYB;
+    AirfoilPlotAxis *resultAxisXA;
+    AirfoilPlotAxis *resultAxisYA;
+    AirfoilPlotAxis *resultAxisXB;
+    AirfoilPlotAxis *resultAxisYB;
 
 
     QLabel *ReLabel;                QLabel *MaLabel;
@@ -252,7 +247,7 @@ private:
     void updateDesignCSTPoint();
     void changeDesignCSTControlPoint(const double);
     bool returnDesignCSTNum(const QPointF);
-    void updateAxes(QChart*, const QVector<QLineSeries*>&);
+    void updateAxes(AirfoilPlot*, const QVector<AirfoilPlotSeries*>&);
 
     void updateDesignTextView(airfoilDesign*);
     void updateDesignTextViewFormXfoil(XFoil*);
@@ -320,7 +315,7 @@ private:
     QMenu *designChartMenu;
     //QAction* designActionArray[5];
     void toggleGridLines();//隐藏坐标系
-    void adjustChartViewAspectRatio(QChartView *);//等比例显示
+    void adjustChartViewAspectRatio(AirfoilPlot *);//等比例显示
     QVector<QAction*>designActionArray;
     void showDesignChartMenu();
     int designChartIndex = 0;
@@ -334,7 +329,7 @@ private:
     //solt
     void showRChartAMenu();
     void showRChartBMenu();
-    void exportChartData(QChart *chart);
+    void exportChartData(AirfoilPlot *chart);
 
     /***************************************翼型优化********************************************/
     void initialAirfoilOptimizationWidget();
@@ -355,26 +350,26 @@ private:
 
 
     //翼型显示
-    QChart *optimizationChartA;
-    MyChartView *optimizationChartViewA;
-    QLineSeries *optimizationSeriesA;
-    QValueAxis *optimizationAxisXA;
-    QValueAxis *optimizationAxisYA;
+    AirfoilPlot *optimizationChartA;
+    AirfoilPlot *optimizationChartViewA;
+    AirfoilPlotSeries *optimizationSeriesA;
+    AirfoilPlotAxis *optimizationAxisXA;
+    AirfoilPlotAxis *optimizationAxisYA;
     // display  //迭代过程展示
-    QValueAxis *iterateAxAxis;
-    QValueAxis *iterateAyAxis;
-    QLineSeries *iterateSeries;
-    QChart *iterateChart;
-    MyChartView *iterateView;
+    AirfoilPlotAxis *iterateAxAxis;
+    AirfoilPlotAxis *iterateAyAxis;
+    AirfoilPlotSeries *iterateSeries;
+    AirfoilPlot *iterateChart;
+    AirfoilPlot *iterateView;
 
 
     // display  //压力分布曲线展示
-    QValueAxis *cpxAxAxis;
-    QValueAxis *cpxAyAxis;
-    QLineSeries *oriCpxSeries;
-    QLineSeries *optCpxSeries;
-    QChart *cpxchart;
-    QChartView *cpxchartView;
+    AirfoilPlotAxis *cpxAxAxis;
+    AirfoilPlotAxis *cpxAyAxis;
+    AirfoilPlotSeries *oriCpxSeries;
+    AirfoilPlotSeries *optCpxSeries;
+    AirfoilPlot *cpxchart;
+    AirfoilPlot *cpxchartView;
     QVector<double>oriCpx;
     QVector<double>optCpx;
 
@@ -419,8 +414,6 @@ private:
 
     QComboBox *choiceCombobox;
 
-    //QLineSeries *optAirfoilSeries;
-
     int choiceOPTAirfoilIndex = 0; //进行优化的翼型ID
 
 
@@ -442,7 +435,7 @@ private:
     //翼型显示
 
 
-    void drawCpxData(const QVector<double>&,QLineSeries*);
+    void drawCpxData(const QVector<double>&,AirfoilPlotSeries*);
     //slot
 
     void cancelOptimizationSetting();
@@ -508,21 +501,21 @@ public:
 
 
 
-    QChart *chartF;
-    QChartView *chartViewF;
-    QChart *chartG;
-    QChartView *chartViewG;
+    AirfoilPlot *chartF;
+    AirfoilPlot *chartViewF;
+    AirfoilPlot *chartG;
+    AirfoilPlot *chartViewG;
 
-    QValueAxis *checkXAxis;
-    QValueAxis *checkYAxis;
-    QValueAxis *checkValueXAxis;
-    QValueAxis *checkValueYAxis;
+    AirfoilPlotAxis *checkXAxis;
+    AirfoilPlotAxis *checkYAxis;
+    AirfoilPlotAxis *checkValueXAxis;
+    AirfoilPlotAxis *checkValueYAxis;
 
-    QLineSeries *airfoilSeriesF;
-    QLineSeries *airfoilSeriesG;
+    AirfoilPlotSeries *airfoilSeriesF;
+    AirfoilPlotSeries *airfoilSeriesG;
 
-    QLineSeries *upperToleranceSeries;
-    QLineSeries *lowerToleranceSeries;
+    AirfoilPlotSeries *upperToleranceSeries;
+    AirfoilPlotSeries *lowerToleranceSeries;
 
     QVector<QVector<double>>checkAirfoil;
     QString checkName;
@@ -542,15 +535,15 @@ private:
     QVector<double>cstPointY;
     QVector<double>cstPointX;
 
-    QChart *chartA;
-    MyChartView *chartViewA;
-    QLineSeries *seriesA;
-    QLineSeries *scatterSeries;
-    QScatterSeries *seriesCstPointA;
-    QScatterSeries *seriesCstPointB;
+    AirfoilPlot *chartA;
+    AirfoilPlot *chartViewA;
+    AirfoilPlotSeries *seriesA;
+    AirfoilPlotSeries *scatterSeries;
+    AirfoilPlotSeries *seriesCstPointA;
+    AirfoilPlotSeries *seriesCstPointB;
 
-    QValueAxis *axisXA;
-    QValueAxis *axisYA;
+    AirfoilPlotAxis *axisXA;
+    AirfoilPlotAxis *axisYA;
     QGridLayout *gridLayoutA;
     QSpinBox *spinBoxA;
     QComboBox *cstNumCombobox;
@@ -582,13 +575,13 @@ private:
     void updateBlendingAirfoil();
     QDialog *blendingDialog;
     QGridLayout *blendingGLayout;
-    QChart *blendingChart;
-    MyChartView *blendingView;
-    QLineSeries *blendingSeriesA;
-    QLineSeries *blendingSeriesB;
-    QLineSeries *blendingSeriesC;
-    QValueAxis *blendingAxisX;
-    QValueAxis *blendingAxisY;
+    AirfoilPlot *blendingChart;
+    AirfoilPlot *blendingView;
+    AirfoilPlotSeries *blendingSeriesA;
+    AirfoilPlotSeries *blendingSeriesB;
+    AirfoilPlotSeries *blendingSeriesC;
+    AirfoilPlotAxis *blendingAxisX;
+    AirfoilPlotAxis *blendingAxisY;
 
     QSlider *blendingSlider;
     QLabel *blendingTextLabelA;
@@ -648,19 +641,19 @@ private:
     QLabel *interMethodLabel;QComboBox *interMethodCombox;
     QTextEdit *iterTextEdit;
 
-    QChart *dragInterChartA;
-    QChart *dragInterChartB;
-    MyChartView *dragInterViewA;//result
-    MyChartView *dragInterViewB;//foil
-    QValueAxis *dragInterAxisXA;
-    QValueAxis *dragInterAxisYA;
-    QValueAxis *dragInterAxisXB;
-    QValueAxis *dragInterAxisYB;
+    AirfoilPlot *dragInterChartA;
+    AirfoilPlot *dragInterChartB;
+    AirfoilPlot *dragInterViewA;//result
+    AirfoilPlot *dragInterViewB;//foil
+    AirfoilPlotAxis *dragInterAxisXA;
+    AirfoilPlotAxis *dragInterAxisYA;
+    AirfoilPlotAxis *dragInterAxisXB;
+    AirfoilPlotAxis *dragInterAxisYB;
     QMenu *interChartMenu;
     QVector<QAction*>interActionArray;
 
-    QVector<QLineSeries*>dragSeriesArray;
-    QLineSeries *dragInterSeries;
+    QVector<AirfoilPlotSeries*>dragSeriesArray;
+    AirfoilPlotSeries *dragInterSeries;
 
 
     QVector<int>interReValueArray;

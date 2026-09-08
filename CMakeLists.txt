@@ -138,6 +138,8 @@ set(PASSWING_SOURCES
     PublicClass/mymath.h
     PublicClass/qcustomplot.cpp
     PublicClass/qcustomplot.h
+    PublicClass/airfoilplot.cpp
+    PublicClass/airfoilplot.h
     PublicClass/structDefinition.h
 
     publicWidgetClass/callout.cpp

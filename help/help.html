@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助文档</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .section header {
+            background-color: #777;
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            font-size: 18px;
+            text-align: center;
+        }
+        .section .content {
+            display: none;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+        .section .content a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .section .content a:hover {
+            background-color: #ddd;
+            color: #000;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .section .content a.active {
+            background-color: #aaa;
+            color: white;
+        }
+        .section .content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            cursor: default;
+        }
+        .image-group {
+            display: none;
+            text-align: left;
+        }
+        .image-group .text-box {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <header class="collapsible">主页</header>
+        <div class="content">
+            <a href="#">帮助文档</a>         
+        </div>
+    </div>
+
+    <div class="section">
+        <header class="collapsible">翼型设计</header>
+        <div class="content">
+            <a href="#" class="toggle-images" data-target="images-group1">翼型正设计</a>
+            <a href="#" class="toggle-images" data-target="images-group2">翼型融合</a>
+            
+            <!-- 图片组1 -->
+            <div id="images-group1" class="image-group">
+                <div class="text-box">
+                    <p>1、无论你想做些什么，都应该先在正设计模式下导入翼型。因为机翼模块和螺旋桨模块都需要定义翼型后，才能工作。</p>
+                </div>
+                <img src="images/image1.png" alt="翼型设计示例图 1">
+
+
+                <div class="text-box">
+                    <p>2、打开数据库，点击翼型库，PassWing导入了一部分profili库和全部UIUC库的翼型。profili库的翼型预处理过，因此可以按照某种排序方式排列</p>
+                </div>
+                <img src="images/libary.png" alt="翼型设计示例图 2">
+
+                <div class="text-box">
+                    <p>3、导入翼型</p>
+                </div>
+                <img src="images/image2.png" alt="翼型设计示例图 2">
+
+
+                <div class="text-box">
+                    <p>4、翼型正设计截面由以下四个模块组成，工作区可以通过拖动点修改翼型，翼型列表可以改变参数化的阶数，设置栏主要设置翼型的雷诺数等。</p>
+                </div>
+                <img src="images/image3.png" alt="翼型设计示例图 3">
+
+                <div class="text-box">
+                    <p>5、你可以通过改变CST阶数检查拟合残差，当然阶数越高你对翼型的控制能力就越强，但是小心过拟合。</p>
+                </div>
+                <img src="images/image4.png" alt="翼型设计示例图 4">
+
+                <div class="text-box">
+                    <p>6、对结果区右键，可以改变曲线类型，还可以保存曲线，也可以添加散点。</p>
+                </div>
+                <img src="images/image5.png" alt="翼型设计示例图 5">   
+        
+            </div>           
+            <!-- 图片组2 -->
+            <div id="images-group2" class="image-group">
+                <div class="text-box">
+                    <p>1、翼型融合，就是生成两个翼型之间的翼型，调整滑块可以让翼型更接近谁。</p>
+                </div>
+                <img src="images/image6.png" alt="翼型设计示例图 6">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <header class="collapsible">飞机设计</header>
+        <div class="content">
+            <a href="#" class="toggle-images" data-target="images-group3">机翼设计</a>
+            <!-- 图片组3 -->
+            <div id="images-group3" class="image-group">
+                <div class="text-box">
+                    <p>1、这是机翼的设计窗口，左侧是树状列表，又上侧是结果切换按钮。</p>
+                </div>
+                <img src="images/wing1.png" alt="翼型设计示例图 7">
+
+                <div class="text-box">
+                    <p>2、点击机翼设计菜单下的机翼定义，定义你的第一幅机翼。定义方式有优化，创建梯形翼和椭圆翼更简单。右下角是导出Catia宏文件，你可以调整X方向的网格数量，保证Catia生成翼型时的精度。</p>
+                </div>
+                <img src="images/wing2.png" alt="翼型设计示例图 8">
+
+                <div class="text-box">
+                    <p>3、定义好机翼后，可以进行求解参数设置，速度、高度、迎角都要进行设置。</p>
+                </div>
+                <img src="images/wing3.png" alt="翼型设计示例图 9">
+
+                <img src="images/wing4.png" alt="翼型设计示例图 10">
+
+                <div class="text-box">
+                    <p></p>4、因为势流法是无黏的，无法预估零升阻力，你可以点击添加零升阻力或者选中Xfoil阻力。无论如何你都要选择一种零升阻力，否则升阻比计算会在极低升力系数下出现很夸张的值。你可以从下面几种机型选择一种，获得CFD计算的零升阻力值。（经测试发现PassWing内置的曲面涡格法对于大弯度翼型收敛性不好，如果对这类机翼进行仿真，需要减小网格数量）
+                </div>
+                <img src="images/wing5.png" alt="翼型设计示例图 11">
+
+                <div class="text-box">
+                    <p></p>5、勾选压力或者设置流线条件，可以对结果进行可视化。但流线的结果存在一些问题。
+                </div>
+                <img src="images/wing6.png" alt="翼型设计示例图 12">
+
+                <div class="text-box">
+                    <p>6、选择2D-A或者2D-B可以切换结果，曲线类型选项可以设置曲线风格。注意，当机翼列表有多副机翼时，只有点击该机翼的根节点，对其的设置才有效。</p>
+                </div>
+                <img src="images/wing7.png" alt="翼型设计示例图 12">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <header class="collapsible">动力设计</header>
+        <div class="content">
+            <a href="#" class="toggle-images" data-target="images-group4">螺旋桨分析</a>
+            <a href="#" class="toggle-images" data-target="images-group5">螺旋桨设计</a>
+            <!-- 图片组4 -->
+            <div id="images-group4" class="image-group">
+                <div class="text-box">
+                    <p>1、进入螺旋桨分析界面后，点击螺旋桨库，从中选择一个要进行分析的模型</p>
+                </div>
+                <img src="images/prop1.png" alt="翼型设计示例图13">
+
+                <img src="images/prop2.png" alt="翼型设计示例图 14">
+
+                <div class="text-box">
+                    <p>2、鼠标可以拖动曲线，因为改变了转速，为了精确的控制转速你可以在左侧转速框微调转速，你可以监测一个速度，然后程序会自动计算固定转速、固定速度下的螺旋桨性能。这时你可以右键任何一个图表，添加机翼的阻力进去，可以估算出飞机的最大速度，或者某个速度下效率最高</p>
+                </div>
+                <img src="images/prop3.png" alt="翼型设计示例图 15">
+            </div>
+            <!-- 图片组5 -->
+            <div id="images-group5" class="image-group">
+                <div class="text-box">
+                    <p>1、进入螺旋桨设计界面，依据经验设置螺旋桨的推力、等数据（十分依赖经验），点击求解，程序会生成较高效率的螺旋桨，但这会很耗时</p>
+                </div>
+                <img src="images/prop4.png" alt="翼型设计示例图 16">
+
+                <div class="text-box">
+                    <p>2、程序生成的螺旋桨，外表不一定很广顺，你可以像改变翼型那样调整螺旋桨扭转角分布和几何形状，螺旋桨生成成功后点击输出Catia文件，你可以获得单个桨叶的Catia宏文件</p>
+                </div>
+                <img src="images/prop5.png" alt="翼型设计示例图 17">
+                <img src="images/prop6.png" alt="翼型设计示例图 18">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <header class="collapsible">优化设计</header>
+        <div class="content">
+            <a href="#" class="toggle-images" data-target="images-group6">翼型优化</a>
+            <a href="#" class="toggle-images" data-target="images-group7">机翼优化</a>
+            <!-- 图片组6 -->
+            <div id="images-group6" class="image-group">
+                <div class="text-box">
+                    <p>1、设置遗传算法的参数，设置Xfoil求解模式，固定迎角还是固定升力。一般都会选择固定升力，然后设置厚度、力矩权重，增加这两个权重意味着同等升阻比下的两个翼型，厚度约大或者力矩越小的翼型会被认为是较优解，当权重较大时，尽管升阻比，但是厚度或力矩占优，仍然会被判定为较优解。</p>
+                </div>
+                <img src="images/opt1.png" alt="翼型设计示例图13">
+            </div>
+            <!-- 图片组7 -->
+            <div id="images-group7" class="image-group">
+                <div class="text-box">
+                    <p>1、机翼的优化比较复杂，你可以控制每个截面处的形状变化大小，或者可以关闭该截面的变化。设置合理的设计升力，进行迭代吧。</p>
+                </div>
+                <img src="images/opt2.png" alt="翼型设计示例图 16">
+
+                <div class="text-box">
+                    <p>2、你可以在可视化区域观察迭代情况，左侧图表可以看到优化后的机翼和其理想椭圆环量分布的差异。</p>
+                </div>
+                <img src="images/opt3.png" alt="翼型设计示例图 17">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <header class="collapsible">其他</header>
+        <div class="content">
+             <a href="#" class="toggle-images" data-target="images-group8">如何使用Catia宏文件</a>
+
+           <div id="images-group8" class="image-group">
+             <p><a href="http://www.aikj.org/h-nd-47.html" target="_blank">教你使用Catia宏文件</a></p>
+      
+             </div>  
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.collapsible').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        document.querySelectorAll('.toggle-images').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('data-target');
+                const targetGroup = document.getElementById(targetId);
+                const isVisible = targetGroup.style.display === 'block';
+                targetGroup.style.display = isVisible ? 'none' : 'block';
+                link.classList.toggle('active', !isVisible);
+
+                document.querySelectorAll('.toggle-images').forEach(otherLink => {
+                    if (otherLink !== link) {
+                        const otherTargetId = otherLink.getAttribute('data-target');
+                        const otherTargetGroup = document.getElementById(otherTargetId);
+                        otherTargetGroup.style.display = 'none';
+                        otherLink.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,6 @@
 #include <QDialog>
 #include <QTreeWidget>
 #include "publicWidgetClass/glwidget.h"
-#include "publicWidgetClass/callout.h"
 #include "WingClass/wingdefinition.h"
 #include "WingClass/wingvlm.h"
 #include "AirfoilClass/airfoildisplay.h"
@@ -20,6 +19,7 @@
 #include "publicWidgetClass/switchbutton.h"
 
 #include "PublicClass/mymath.h"
+#include "PublicClass/airfoilplot.h"
 
 enum viewType{//当前界面
     WING_DESIGN,
@@ -321,35 +321,34 @@ private:
     QVector<VLMSetting>wingSettingArray;
     //QGridLayout *wingChartLayout;
     QVBoxLayout *wingChartVLayout;
-    QChart *chartWA;
-    QChart *chartWB;
-    QChart *chartWC;
-    QChart *chartWD;
-    MyChartView *chartViewWA;
-    MyChartView *chartViewWB;
-    MyChartView *chartViewWC;
-    MyChartView *chartViewWD;
-    QVector<QLineSeries*>wingResultSeriesA;
-    QVector<QLineSeries*>wingResultSeriesB;
-    QVector<QLineSeries*>wingResultSeriesC;
-    QVector<QLineSeries*>wingResultSeriesD;
+    PlotWidget *chartWA;
+    PlotWidget *chartWB;
+    PlotWidget *chartWC;
+    PlotWidget *chartWD;
+    PlotWidget *chartViewWA;
+    PlotWidget *chartViewWB;
+    PlotWidget *chartViewWC;
+    PlotWidget *chartViewWD;
+    QVector<PlotSeries*>wingResultSeriesA;
+    QVector<PlotSeries*>wingResultSeriesB;
+    QVector<PlotSeries*>wingResultSeriesC;
+    QVector<PlotSeries*>wingResultSeriesD;
     //添加曲线
-    QLineSeries *autoSeriesA;
-    QLineSeries *autoSeriesB;
-    QLineSeries *autoSeriesC;
-    QLineSeries *autoSeriesD;
+    PlotSeries *autoSeriesA;
+    PlotSeries *autoSeriesB;
+    PlotSeries *autoSeriesC;
+    PlotSeries *autoSeriesD;
 
-    QValueAxis *axisXWA;
-    QValueAxis *axisYWA;
-    QValueAxis *axisXWB;
-    QValueAxis *axisYWB;
-    QValueAxis *axisXWC;
-    QValueAxis *axisYWC;
-    QValueAxis *axisXWD;
-    QValueAxis *axisYWD;
+    PlotAxis *axisXWA;
+    PlotAxis *axisYWA;
+    PlotAxis *axisXWB;
+    PlotAxis *axisYWB;
+    PlotAxis *axisXWC;
+    PlotAxis *axisYWC;
+    PlotAxis *axisXWD;
+    PlotAxis *axisYWD;
     QVector<wingVLM*>VLMSolverArray;
 
-    QVector<QLineSeries*>wingResultSeriesE;
 
     int wingIndex = 0;      //第N个机翼
     int wingChoiceIndex = 0;//选中机翼的索引
@@ -368,10 +367,6 @@ private:
 private slots:
     void changeAirfoilData(const QVector<QVector<double>>&,const QVector<double>&);
     void updateIterText(const std::vector<double>&);
-    void showChartCoordA(const QPointF&,bool);
-    void showChartCoordB(const QPointF&,bool);
-    void showChartCoordC(const QPointF&,bool);
-    void showChartCoordD(const QPointF&,bool);
     void resetAirfoilData();
     //
 
@@ -400,17 +395,12 @@ private:
     QLabel *wingMessageTextLabel;
     QVBoxLayout *wingWidgetVLayout;//切换机翼编辑
     QHBoxLayout *viewChangeHLayout;//切换结果显示
-    void removeSeriesLegendItem(QChart *chart, QLineSeries *series);
+    void removeSeriesLegendItem(PlotWidget *chart, PlotSeries *series);
     //曲线类型更改
     QDialog *seriesStyleDialog;
     QColorDialog *colorDialog;
     QPushButton *colorButton;
     //QGroupBox *seriesTypeBox;
-    Callout *toolTipA;
-    Callout *toolTipB;
-    Callout *toolTipC;
-    Callout *toolTipD;
-
     //曲线右键菜单
     QMenu *rChartMenu;
     QVector<QAction*>actionArray;
@@ -427,12 +417,12 @@ private:
     QVector<QVector<QVector<double>>>resultArray;//当前机翼结果数据
 private:
     //展向结果展示
-    QChart *spanChart;
-    MyChartView *spanChartView;
-    QLineSeries *spanSeriesA;
-    QLineSeries *spanSeriesB;
-    QValueAxis *spanXAxis;
-    QValueAxis *spanYAxis;
+    PlotWidget *spanChart;
+    PlotWidget *spanChartView;
+    PlotSeries *spanSeriesA;
+    PlotSeries *spanSeriesB;
+    PlotAxis *spanXAxis;
+    PlotAxis *spanYAxis;
     int spanResultTypeIndex = 0;
 
     QMenu *spanRMenu;
@@ -502,9 +492,9 @@ private:
     void drawResultChartC(const int);
     void drawResultChartD(const int);
 
-    void exportChartData(QChart *chart);
+    void exportChartData(PlotWidget *chart);
 
-    void updateAxes(QChart *, const QVector<QLineSeries*> &);
+    void updateAxes(PlotWidget *, const QVector<PlotSeries*> &);
 
 
 
@@ -724,17 +714,17 @@ private:
 
     QVBoxLayout *iterVLayout;
 
-    QChart *iterChartA;
-    QChart *iterChartB;
-    MyChartView *iterViewA;
-    MyChartView *iterViewB;
-    QValueAxis *iterXAxisA;
-    QValueAxis *iterYAxisA;
-    QValueAxis *iterXAxisB;
-    QValueAxis *iterYAxisB;
-    QLineSeries *iterSeriesA;
-    QLineSeries *iterSeriesB;
-    QLineSeries *iterSeriesC;
+    PlotWidget *iterChartA;
+    PlotWidget *iterChartB;
+    PlotWidget *iterViewA;
+    PlotWidget *iterViewB;
+    PlotAxis *iterXAxisA;
+    PlotAxis *iterYAxisA;
+    PlotAxis *iterXAxisB;
+    PlotAxis *iterYAxisB;
+    PlotSeries *iterSeriesA;
+    PlotSeries *iterSeriesB;
+    PlotSeries *iterSeriesC;
     QVector<QString>iterTextArray;
 
 
