@@ -198,7 +198,6 @@ void propellerDesign::computeXfoilData(){
     for(int i = 0;i<step;i++){
         int index = i * threadNum;
         startXfoil(index,threadNum);
-        QString text = "第" + QString::number(i + 1) + "组翼型计算完成，剩余" + QString::number(step - i - 1) + "组\n";
         progressValue = double(i + 1) / step * 96;
         emit emitProgressValue(progressValue);
         emit emitMessage(text);
@@ -494,6 +493,8 @@ void propellerDesign::startXfoil(const int index,const int num){
         testSolve.append(solvers);
         solvers->importAirfoil(airfoil);
         solvers->refreshParaments(settingTmp);
+        solvers->setMissionId(index + i);
+        connect(solvers,&airfoilSolve::workFinished,this,&propellerDesign::emitId);
         QFuture<void>future = QtConcurrent::run([solvers](){
             solvers->solver();
         });
