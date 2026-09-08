@@ -40,8 +40,8 @@ Use one consistent dependency stack. With MSYS2/MinGW64, install:
 
 ```bash
 pacman -S --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja \
-  mingw-w64-x86_64-qt5 mingw-w64-x86_64-qt5-charts \
-  mingw-w64-x86_64-qt5-webengine mingw-w64-x86_64-eigen3 \
+  mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts \
+  mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-eigen3 \
   mingw-w64-x86_64-hdf5 mingw-w64-x86_64-vtk
 ```
 
