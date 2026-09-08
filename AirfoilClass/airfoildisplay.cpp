@@ -87,13 +87,13 @@ airfoilDisplay::airfoilDisplay() {
     // -------------------------
     // 读取气动系数
     auto cl = reader.readCL("/alpha_0"); // 根据 HDF5 文件实际 group 名
-    qDebug() << "C_l size:" << cl.size();
+     << "C_l size:" << cl.size();
 
     auto cd = reader.readCD("/alpha_0");
-    qDebug() << "C_d size:" << cd.size();
+     << "C_d size:" << cd.size();
 
     auto cm = reader.readCM("/alpha_0");
-    qDebug() << "C_m size:" << cm.size();
+     << "C_m size:" << cm.size();
     */
 
 
@@ -1598,7 +1598,7 @@ void airfoilDisplay::showAirfoilOutputTable(){
     modelType = OUTPUTFOIL;
     foilOutput->buildOutputAirfoilDialog(airfoilNameArray);
     foilOutput->copyFoilArray(airfoilArray);
-    //qDebug()<<airfoilArray;
+    //<<airfoilArray;
     connect(foilOutput->foilLibariesButton,&QPushButton::clicked,this,&airfoilDisplay::showLibary);
 
 }
@@ -2241,7 +2241,7 @@ void airfoilDisplay::addNewAirfoil(const QVector<QVector<double>>&airfoil){
         //翼型气动数据
         interDataArray.append(myFile::getInterData(airfoilNameArray[airfoilIndex]));
 
-        //qDebug()<<interDataArray[airfoilIndex][0].clData;
+        //<<interDataArray[airfoilIndex][0].clData;
         //
 
         drawInterAirfoil();
@@ -2482,11 +2482,11 @@ void airfoilDisplay::updateAnalyseSetting(){
 void airfoilDisplay::startInterAnalyse(){
     bool tmp = solutionModelButtonA->isEnabled();
     if(!tmp){
-        //qDebug()<<1;
+       
 
         startInterChoiceSolver();
     }else{
-        //qDebug()<<2;
+        
 
         startInterSolver();
     }
