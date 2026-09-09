@@ -51,33 +51,129 @@ cmake --build --preset release --parallel
 
 ### Windows
 
-推荐使用 MSYS2 MinGW64，并确保所有依赖均来自同一套 MinGW64 工具链：
+#### 不安装开发环境，直接运行
 
-```bash
-pacman -S --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake \
-  mingw-w64-x86_64-ninja \
-  mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts \
-  mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-eigen3 \
-  mingw-w64-x86_64-exprtk mingw-w64-x86_64-fast_float \
-  mingw-w64-x86_64-hdf5 mingw-w64-x86_64-nlohmann-json \
-  mingw-w64-x86_64-utf8cpp mingw-w64-x86_64-vtk
-```
+如果只需要使用 PassWing，不需要在目标电脑上编译。进入仓库的
+[GitHub Actions](https://github.com/YanYaoyuan/passwing/actions)，打开最近一次成功的
+`build` 流水线，在页面底部下载 `PassWing-Windows-x64` 成果物。完整解压 ZIP 后运行
+`PassWing.exe`，不要只复制一个 EXE。成果物包含 Qt 插件、MinGW/VTK/HDF5 运行库，
+以及程序需要的 `setting`、`resoure`、`theoreticalFramework`、`libaries`、`help` 和
+`Profili.mdb`（仓库中存在时）。
 
-在 MSYS2 MinGW64 终端中执行：
+#### 全新电脑从零编译（推荐：MSYS2 MinGW64）
 
-```bash
-cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF
-cmake --build --preset release --parallel
-./out/build/release/PassWing.exe
-```
+这种方式不要求预先安装 Visual Studio、Qt、VTK、HDF5 或 Eigen；它们都由 MSYS2
+统一安装。建议使用 64 位 Windows 10/11，并为工具链和依赖预留至少 10 GB 空间。
 
-如已安装 Qt WebEngine，可去掉 `-DPASSWING_ENABLE_WEBENGINE=OFF`。未安装时程序会使用
-`QTextBrowser` 作为 HTML 页面回退方案。
+1. 从 [MSYS2 官网](https://www.msys2.org/) 安装 MSYS2。
+2. 先打开 `MSYS2 MSYS` 终端更新基础系统：
 
-已有 MSVC 依赖环境时，也可以直接双击仓库根目录的 `build-windows.bat`。脚本会使用
-Visual Studio x64 Release 模式完成配置、编译和运行库部署，输出目录为
-`out/package/PassWing-Windows-x64`，同时生成同名 ZIP 包。本机依赖路径与默认值不同时，
-可在 PowerShell 中覆盖参数：
+   ```bash
+   pacman -Syu
+   ```
+
+   如果终端提示关闭窗口，关闭后重新打开 `MSYS2 MSYS`，再次执行 `pacman -Syu`，
+   直到没有待更新的软件包。
+
+3. 从开始菜单打开 **MSYS2 MinGW x64** 终端。后续命令必须在这个终端执行，不能使用
+   普通 CMD、PowerShell、`MSYS2 MSYS` 或其他编译器终端。
+4. 一次性安装编译器、CMake、Qt、VTK、HDF5、Eigen 和其余依赖：
+
+   ```bash
+   pacman -S --needed \
+     git \
+     mingw-w64-x86_64-gcc \
+     mingw-w64-x86_64-cmake \
+     mingw-w64-x86_64-ninja \
+     mingw-w64-x86_64-qt6-base \
+     mingw-w64-x86_64-qt6-charts \
+     mingw-w64-x86_64-qt6-tools \
+     mingw-w64-x86_64-eigen3 \
+     mingw-w64-x86_64-exprtk \
+     mingw-w64-x86_64-fast_float \
+     mingw-w64-x86_64-hdf5 \
+     mingw-w64-x86_64-nlohmann-json \
+     mingw-w64-x86_64-utf8cpp \
+     mingw-w64-x86_64-vtk
+   ```
+
+5. 下载代码并进入项目目录：
+
+   ```bash
+   git clone https://github.com/YanYaoyuan/passwing.git
+   cd passwing
+   ```
+
+   如果下载的是源码 ZIP，也可以解压后进入该目录。Windows 的 `D:\work\passwing`
+   在 MSYS2 中写作 `/d/work/passwing`。
+
+6. 确认当前使用的是 MinGW64 工具链：
+
+   ```bash
+   which gcc g++ cmake ninja
+   gcc --version
+   cmake --version
+   ```
+
+   `which` 输出应以 `/mingw64/bin/` 开头。
+
+7. 配置并编译 Release 版本：
+
+   ```bash
+   CC=gcc CXX=g++ cmake --preset release \
+     -DPASSWING_ENABLE_WEBENGINE=OFF
+   cmake --build --preset release --parallel 2
+   ```
+
+   `--parallel 2` 可以降低 VTK/Qt 项目编译时的内存压力；内存充足时可以提高数字。
+   编译结果位于 `out/build/release/PassWing.exe`。在开发环境中可直接启动：
+
+   ```bash
+   ./out/build/release/PassWing.exe
+   ```
+
+8. 如需生成可复制到其他 Windows 电脑的完整 ZIP 包，继续执行：
+
+   ```bash
+   package_root=out/package/PassWing-Windows-x64
+   rm -rf "$package_root"
+   mkdir -p "$package_root"
+   cp out/build/release/PassWing.exe "$package_root/PassWing.exe"
+
+   for item in setting resoure theoreticalFramework libaries help Profili.mdb; do
+     if [ -e "$item" ]; then
+       cp -a "$item" "$package_root/"
+     fi
+   done
+
+   cp -f /mingw64/bin/*.dll "$package_root/"
+   windeployqt6 --release --compiler-runtime --no-translations \
+     --dir "$package_root" "$package_root/PassWing.exe"
+
+   cd out/package
+   cmake -E tar cf PassWing-Windows-x64.zip --format=zip -- PassWing-Windows-x64
+   ```
+
+   最终文件为 `out/package/PassWing-Windows-x64.zip`。应在另一台没有 MSYS2/Qt 的电脑
+   上完整解压后测试，至少确认 `PassWing.exe` 能启动且 `platforms/qwindows.dll` 存在。
+
+如已安装 Qt WebEngine，可去掉 `-DPASSWING_ENABLE_WEBENGINE=OFF`；未安装时程序使用
+`QTextBrowser` 显示本地 HTML。不要混用 MinGW 与 MSVC 编译的 Qt、VTK 或 HDF5 库。
+
+常见问题：
+
+- `No CMAKE_C_COMPILER could be found`：终端选错；请使用 **MSYS2 MinGW x64**。
+- 找不到 Qt、VTK、HDF5 或 Eigen：先完成 `pacman -Syu`，再确认 `cmake` 来自
+  `/mingw64/bin/cmake`。
+- 双击 EXE 提示缺少 DLL 或 Qt platform plugin：不要单独复制构建目录中的 EXE，
+  应使用第 8 步生成的完整目录或下载 GitHub Actions 成果物。
+- 曾用其他生成器配置过同一目录：删除 `out/build/release` 后重新执行第 7 步。
+
+#### 已有 MSVC 依赖环境
+
+仓库根目录的 `build-windows.bat` 用于已经安装 Visual Studio C++、MSVC 版 Qt、VTK、
+HDF5 和 Eigen 的电脑。它会完成 x64 Release 编译、运行库部署和 ZIP 打包。依赖位置与
+脚本默认值不同时，在 PowerShell 中明确传入路径：
 
 ```powershell
 .\scripts\build-windows.ps1 `
@@ -87,10 +183,10 @@ Visual Studio x64 Release 模式完成配置、编译和运行库部署，输出
   -EigenRoot "C:\path\to\Eigen3"
 ```
 
-GitHub Actions 的 Linux 和 Windows 任务也会生成完整的可分发包，并分别上传
-`PassWing-Linux-x64` 和 `PassWing-Windows-x64` 成果物。包内包含程序、Qt 插件、
-VTK/HDF5 等运行库，以及 `setting`、`resoure`、`theoreticalFramework`、
-`libaries`、`help` 和 `Profili.mdb`（仓库中存在时）。
+Windows GitHub Actions 使用临时 `windows-2022` 执行环境，每次从头安装上述 MinGW64
+工具链和依赖，然后配置、编译并打包。因此 CI 成功是“没有预装项目依赖的 Windows
+环境”可重复构建的主要验收标准；它不等同于在一台刚安装完成的实体 Windows 电脑上
+进行人工测试。
 
 ## 开发
 

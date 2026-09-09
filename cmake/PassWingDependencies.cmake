@@ -61,7 +61,10 @@ if(EXISTS "${PASSWING_EIGEN_DIR}/Eigen/Core")
     add_library(passwing_eigen INTERFACE)
     target_include_directories(passwing_eigen INTERFACE "${PASSWING_EIGEN_DIR}")
 else()
-    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+    # Eigen's config package only reports compatibility within the requested
+    # major version.  Omitting a version here allows both Eigen 3.x and the
+    # current MSYS2 Eigen 5.x package; PassWing only uses APIs shared by both.
+    find_package(Eigen3 REQUIRED NO_MODULE)
     add_library(passwing_eigen ALIAS Eigen3::Eigen)
 endif()
 
