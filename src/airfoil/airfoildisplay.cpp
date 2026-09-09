@@ -1,4 +1,4 @@
-﻿
+
 #include "airfoil/airfoildisplay.h"
 #include "airfoil/cfddatareader.h"
 #include <QFile>
@@ -10,6 +10,19 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFont>
 #include "common/myfile.h"
+
+#include <cmath>
+
+namespace {
+
+AirfoilPlot *createFramedAirfoilPlot()
+{
+    auto *plot = new AirfoilPlot();
+    plot->setFrameAppearance(QPen(QColor(QStringLiteral("#B8C2CC")), 1.0), 6.0);
+    return plot;
+}
+
+} // namespace
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
 # pragma execution_character_set("utf-8")
@@ -302,9 +315,9 @@ void airfoilDisplay::initialAirfoilOptimizationWidget(){
 
     optimizationGLayoutB2 = new QGridLayout(optimizationToolBox);
 
-    optimizationChartA = new AirfoilPlot();
-    iterateChart = new AirfoilPlot();
-    cpxchart = new AirfoilPlot();
+    optimizationChartA = createFramedAirfoilPlot();
+    iterateChart = createFramedAirfoilPlot();
+    cpxchart = createFramedAirfoilPlot();
 
     optimizationChartViewA = optimizationChartA;
     iterateView = iterateChart;
@@ -440,12 +453,16 @@ void airfoilDisplay::initialAirfoilOptimizationWidget(){
     valueEdit = new QLineEdit(airfoilOptimizationWidget);
 
 
-    thickWeightedLabel = new QLabel(airfoilOptimizationWidget) ;
-    cmWeightedLabel = new QLabel(airfoilOptimizationWidget) ;
-    thickWeightedSlider = new QSlider(Qt::Horizontal,airfoilOptimizationWidget);
-    cmWeightedSlider = new QSlider(Qt::Horizontal,airfoilOptimizationWidget);
-    thickWeightedValueLabel = new QLabel(airfoilOptimizationWidget) ;
-    cmWeightedValueLabel = new QLabel(airfoilOptimizationWidget) ;
+    thicknessConstraintLabel = new QLabel(airfoilOptimizationWidget);
+    momentConstraintLabel = new QLabel(airfoilOptimizationWidget);
+    thicknessConstraintSeparator = new QLabel("至", airfoilOptimizationWidget);
+    momentConstraintSeparator = new QLabel("至", airfoilOptimizationWidget);
+    minThicknessConstraintSpinBox =
+        new QDoubleSpinBox(airfoilOptimizationWidget);
+    maxThicknessConstraintSpinBox =
+        new QDoubleSpinBox(airfoilOptimizationWidget);
+    minMomentConstraintSpinBox = new QDoubleSpinBox(airfoilOptimizationWidget);
+    maxMomentConstraintSpinBox = new QDoubleSpinBox(airfoilOptimizationWidget);
 
 
 
@@ -485,14 +502,33 @@ void airfoilDisplay::initialAirfoilOptimizationWidget(){
     designClLabel->setText("设计迎角");
     targetRadioButtonB->setChecked(true);
     choseAirfoilLabel->setText("翼型");
-    thickWeightedLabel->setText("厚度权重");
-    cmWeightedLabel->setText("力矩权重");
-    thickWeightedValueLabel->setText("0");
-    cmWeightedValueLabel->setText("0");
-    thickWeightedSlider->setFixedWidth(100);
-    cmWeightedSlider->setFixedWidth(100);
-    thickWeightedSlider->setRange(0, 100);
-    cmWeightedSlider->setRange(0, 100);
+    thicknessConstraintLabel->setText("厚度范围");
+    momentConstraintLabel->setText("力矩范围");
+    thicknessConstraintLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    momentConstraintLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    thicknessConstraintSeparator->setAlignment(Qt::AlignCenter);
+    momentConstraintSeparator->setAlignment(Qt::AlignCenter);
+    thicknessConstraintSeparator->setFixedWidth(20);
+    momentConstraintSeparator->setFixedWidth(20);
+    for (QDoubleSpinBox *spinBox : {minThicknessConstraintSpinBox,
+                                    maxThicknessConstraintSpinBox}) {
+        spinBox->setRange(3.0, 40.0);
+        spinBox->setDecimals(1);
+        spinBox->setSingleStep(0.5);
+        spinBox->setSuffix("%");
+        spinBox->setFixedWidth(82);
+    }
+    minThicknessConstraintSpinBox->setValue(3.0);
+    maxThicknessConstraintSpinBox->setValue(40.0);
+    for (QDoubleSpinBox *spinBox : {minMomentConstraintSpinBox,
+                                    maxMomentConstraintSpinBox}) {
+        spinBox->setRange(-1.0, 1.0);
+        spinBox->setDecimals(2);
+        spinBox->setSingleStep(0.05);
+        spinBox->setFixedWidth(82);
+    }
+    minMomentConstraintSpinBox->setValue(-1.0);
+    maxMomentConstraintSpinBox->setValue(1.0);
     targetLabel->setText("目标值");
 
 
@@ -556,20 +592,31 @@ void airfoilDisplay::initialAirfoilOptimizationWidget(){
     optimizationGLayoutB2->addWidget(designClLabel,1,3,1,1);
     optimizationGLayoutB2->addWidget(targetRadioButtonA,1,2,1,1);
     optimizationGLayoutB2->addWidget(targetRadioButtonB,1,4,1,1);
-    optimizationGLayoutB2->addWidget(thickWeightedLabel,2,1,1,1);
-    optimizationGLayoutB2->addWidget(thickWeightedSlider,2,2,1,2);
-    optimizationGLayoutB2->addWidget(thickWeightedValueLabel,2,4,1,1);
-    optimizationGLayoutB2->addWidget(cmWeightedLabel,3,1,1,1);
-    optimizationGLayoutB2->addWidget(cmWeightedSlider,3,2,1,2);
-    optimizationGLayoutB2->addWidget(cmWeightedValueLabel,3,4,1,1);
+    auto *thicknessConstraintLayout = new QHBoxLayout();
+    thicknessConstraintLayout->setContentsMargins(0, 0, 0, 0);
+    thicknessConstraintLayout->setSpacing(6);
+    thicknessConstraintLayout->addWidget(minThicknessConstraintSpinBox);
+    thicknessConstraintLayout->addWidget(thicknessConstraintSeparator);
+    thicknessConstraintLayout->addWidget(maxThicknessConstraintSpinBox);
+    thicknessConstraintLayout->addStretch();
+
+    auto *momentConstraintLayout = new QHBoxLayout();
+    momentConstraintLayout->setContentsMargins(0, 0, 0, 0);
+    momentConstraintLayout->setSpacing(6);
+    momentConstraintLayout->addWidget(minMomentConstraintSpinBox);
+    momentConstraintLayout->addWidget(momentConstraintSeparator);
+    momentConstraintLayout->addWidget(maxMomentConstraintSpinBox);
+    momentConstraintLayout->addStretch();
+
+    optimizationGLayoutB2->addWidget(thicknessConstraintLabel,2,1,1,1);
+    optimizationGLayoutB2->addLayout(thicknessConstraintLayout,2,2,1,4);
+    optimizationGLayoutB2->addWidget(momentConstraintLabel,3,1,1,1);
+    optimizationGLayoutB2->addLayout(momentConstraintLayout,3,2,1,4);
     optimizationGLayoutB2->addWidget(targetLabel,4,1,1,2);
     optimizationGLayoutB2->addWidget(valueEdit,4,3,1,2);
 
 
 
-
-    connect(thickWeightedSlider,&QSlider::valueChanged,this,&airfoilDisplay::updateThickWeightedValueLabel);
-    connect(cmWeightedSlider,&QSlider::valueChanged,this,&airfoilDisplay::updateCmWeightedValueLabel);
 
     connect(choiceCombobox, QOverload<int>::of(&QComboBox::activated),
             this, &airfoilDisplay::drawOptIndexAirfoil);
@@ -601,14 +648,14 @@ void airfoilDisplay::initialAirfoilDesignWidget(){
     airfoilListBox->setFixedWidth(400);
     designSettingBox->setFixedWidth(400);
     airfoilToolBox->setFixedWidth(400);
-    
+
     designGLayoutA1 = new QGridLayout(airfoilListBox);
     designGLayoutB1 = new QGridLayout(designSettingBox);
     designGLayoutB2 = new QGridLayout(airfoilToolBox);
 
-    designChartA = new AirfoilPlot();
-    resultChartA = new AirfoilPlot();
-    resultChartB = new AirfoilPlot();
+    designChartA = createFramedAirfoilPlot();
+    resultChartA = createFramedAirfoilPlot();
+    resultChartB = createFramedAirfoilPlot();
 
 
 
@@ -907,7 +954,7 @@ void airfoilDisplay::initialModifyAirfoilDialogCST(){
     modifyAirfoilDialog = new QDialog();
     gridLayoutA = new QGridLayout(modifyAirfoilDialog);
 
-    chartA = new AirfoilPlot();
+    chartA = createFramedAirfoilPlot();
     chartA->setBackgroundBrush(Qt::NoBrush);
 
     chartViewA = chartA;
@@ -962,8 +1009,8 @@ void airfoilDisplay::initialCheckCSTDialog(){
     checkCSTDialog = new QDialog();
     checkGridLayout = new QGridLayout(checkCSTDialog);
 
-    chartF = new AirfoilPlot();
-    chartG = new AirfoilPlot();
+    chartF = createFramedAirfoilPlot();
+    chartG = createFramedAirfoilPlot();
     chartViewF = chartF;
     chartViewG = chartG;
 
@@ -1005,6 +1052,7 @@ void airfoilDisplay::initialCheckCSTDialog(){
 
 
     CSTNumBox->setMinimum(6);
+    CSTNumBox->setMaximum(12);
     CSTNumBox->setSingleStep(1);
 
     checkGridLayout->addWidget(chartViewF,0,0,2,2);
@@ -1053,7 +1101,7 @@ void airfoilDisplay::initialCheckCSTDialog(){
 void airfoilDisplay::initialAirfoilBlendingDialog(){
     blendingDialog = new QDialog();
     blendingGLayout = new QGridLayout(blendingDialog);
-    blendingChart = new AirfoilPlot();
+    blendingChart = createFramedAirfoilPlot();
     blendingView = blendingChart;
     blendingSeriesA = new AirfoilPlotSeries;
     blendingSeriesB = new AirfoilPlotSeries;
@@ -1468,8 +1516,8 @@ void airfoilDisplay::initialInterDragWidget(){
     threadNumLabel = new QLabel("线程数量",dragInterWidget);threadNumEdit = new QLineEdit("10",dragInterWidget);
     interMethodLabel = new QLabel("插值模型",dragInterWidget);interMethodCombox = new QComboBox(dragInterWidget);
     iterTextEdit = new QTextEdit();
-    dragInterChartA = new AirfoilPlot();
-    dragInterChartB = new AirfoilPlot();
+    dragInterChartA = createFramedAirfoilPlot();
+    dragInterChartB = createFramedAirfoilPlot();
     dragInterViewA = dragInterChartA;
     dragInterViewB = dragInterChartB;
     dragInterSeries = new AirfoilPlotSeries();
@@ -2367,18 +2415,44 @@ void airfoilDisplay::initialModifyAirfoilDialog()
 }
 
 
-void airfoilDisplay::initialGa(){
+bool airfoilDisplay::initialGa()
+{
+    if (threadNum <= 0) {
+        QMessageBox::information(this, "警告", "线程数量必须大于0");
+        return false;
+    }
+    if (choiceOPTAirfoilIndex < 0 ||
+        choiceOPTAirfoilIndex >= airfoilArray.size() ||
+        choiceOPTAirfoilIndex >= cstArray.size() ||
+        choiceOPTAirfoilIndex >= airfoilDesignModelArray.size() ||
+        airfoilDesignModelArray[choiceOPTAirfoilIndex] == nullptr) {
+        QMessageBox::information(this, "警告", "优化翼型数据不完整");
+        return false;
+    }
 
-    const int parameterCount = airfoilDesignModelArray[choiceOPTAirfoilIndex]->cstNum * 2;
+    const int parameterCount =
+        airfoilDesignModelArray[choiceOPTAirfoilIndex]->cstNum * 2;
     GaSetting.solutionsNum = parameterCount;
-    exp = new airfoilOptimization(GaSetting,cstArray[choiceOPTAirfoilIndex]);
-    exp->initialElite();
+    auto optimizer = std::make_unique<airfoilOptimization>(
+        GaSetting, cstArray[choiceOPTAirfoilIndex]);
+    const QString error = optimizer->validationError();
+    if (!error.isEmpty()) {
+        QMessageBox::information(this, "警告", error);
+        return false;
+    }
+    if (!optimizer->initialElite()) {
+        QMessageBox::information(this, "警告", "遗传算法初始化失败");
+        return false;
+    }
+
+    exp = std::move(optimizer);
     optStep = GaSetting.step;
     workerNum = GaSetting.initialEliteNum / threadNum;
 
-    if(iterateSeries->count()>0)
+    if (iterateSeries->count() > 0)
         iterateSeries->clear();
 
+    return true;
 }
 void airfoilDisplay::updateInterButtonState() {
     // 判断哪个按钮被点击，并更新状态
@@ -2793,36 +2867,60 @@ void airfoilDisplay::startXfoilInThreadB(const int index,const int num){
     qDeleteAll(testSolve);
     testSolve.clear();
 }
-void airfoilDisplay::startOpt(){
-    if(airfoilArray.isEmpty()){
-        QMessageBox::information(this,"警告","未添加翼型");
+void airfoilDisplay::startOpt()
+{
+    if (optimizationFuture.isRunning()) {
+        QMessageBox::information(this, "提示", "翼型优化正在运行，请稍候");
         return;
     }
-    initialGa();
+    if (airfoilArray.isEmpty()) {
+        QMessageBox::information(this, "警告", "未添加翼型");
+        return;
+    }
+    if (!initialGa())
+        return;
+
+    optimizationCancelRequested.store(false);
     changeOptimizationProgressBar(0);
-    QFuture<void>future = QtConcurrent::run([&](){
+    optimizationFuture = QtConcurrent::run([this]() {
         solveGa();
     });
-
 }
-void airfoilDisplay::solveGa(){
+void airfoilDisplay::solveGa()
+{
+    for (int i = 0; i < GaSetting.step; ++i) {
+        if (optimizationCancelRequested.load())
+            return;
 
-    for(int i = 0; i<GaSetting.step;i++){
-        for(int j = 0; j<workerNum;j++){
-            startXfoilInThread(i,j);
+        for (int j = 0; j < workerNum; ++j) {
+            startXfoilInThread(i, j);
+            if (optimizationCancelRequested.load())
+                return;
         }
-        /*************************************************/  //XFOIL有时会计算失败，给出错误的值。
-
-        if(i >= 1){
-            for(int k = 0; k < resultK.length(); k++){
-                if(resultK[k] > exp->bestSolution[i - 1] * 3)
-                    resultK[k] = 0;
+        // XFOIL偶尔会返回非数值或异常偏大的结果。
+        if (i >= 1 && exp->bestSolution.size() >= i) {
+            const double previousBest = exp->bestSolution[i - 1];
+            for (double &result : resultK) {
+                if (!std::isfinite(result) ||
+                    (previousBest > 0.0 && result > previousBest * 3.0))
+                    result = 0.0;
+            }
+        } else {
+            for (double &result : resultK) {
+                if (!std::isfinite(result))
+                    result = 0.0;
             }
         }
-        /***********************************************/
+
+        if (resultK.size() < GaSetting.eliteNum || historyData.isEmpty())
+            return;
 
         exp->sortResult(resultK);
         exp->updateChromosomeSequenceDec();
+        if (exp->bestCST.size() != GaSetting.solutionsNum ||
+            exp->bestSolution.size() <= i || exp->bestIndex < 0)
+            return;
+
         exp->selectionChromosomeSequenceDec();
         exp->decToBin();
         exp->overlappingOperations();
@@ -2830,37 +2928,33 @@ void airfoilDisplay::solveGa(){
         exp->binToDec();
         workerNum = GaSetting.eliteNum / threadNum;
 
-        airfoilDesign design(airfoilDesignModelArray[choiceOPTAirfoilIndex]->cstNum);
+        airfoilDesign design(
+            airfoilDesignModelArray[choiceOPTAirfoilIndex]->cstNum);
         design.buildBenrnstein(airfoilArray[choiceOPTAirfoilIndex]);
         design.buildAirfoilCurve(exp->bestCST);
-        if( i==0){
-            oriK = resultK[0];
-            if(oriK == 0){
+        if (i == 0) {
+            oriK = resultK.first();
+            if (oriK == 0.0 && exp->bestIndex < historyData.size()) {
                 oriCpx = historyData[exp->bestIndex].cpx;
                 optCpx = historyData[exp->bestIndex].cpx;
-            }else{
-                oriCpx = historyData[0].cpx;
-                optCpx = historyData[0].cpx;
+            } else {
+                oriCpx = historyData.first().cpx;
+                optCpx = historyData.first().cpx;
             }
 
         }
         optK = exp->bestSolution[i];
 
 
-        if(exp->bestIndex < GaSetting.eliteNum ){
+        if (exp->bestIndex < GaSetting.eliteNum &&
+            exp->bestIndex < historyData.size()) {
             optCpxIsChange = true;
             optCpx = historyData[exp->bestIndex].cpx;
 
         }
-        //qDebug()<<exp->bestIndex;
-
-
-        emit emitOptimizationUI(i,design.newAirfoilData);  //update UI
+        emit emitOptimizationUI(i, design.newAirfoilData);
         QVector<fixClResult>().swap(historyData);
         QVector<double>().swap(resultK);
-        resultK.clear();
-        thick.clear();
-        historyData.clear();
     }
 
 }
@@ -2875,6 +2969,8 @@ void airfoilDisplay::startXfoilInThread(int step,int n){
     QVector<QFuture<void>>futures;
 
     QVector<airfoilSolve*>testSolve;
+    QVector<double> thicknesses;
+    thicknesses.reserve(threadNum);
     QFutureSynchronizer<void> sync;
     int index1;
 
@@ -2897,11 +2993,11 @@ void airfoilDisplay::startXfoilInThread(int step,int n){
             if (index1 == 0) { // 先计算一次初始翼型
                 solvers->importAirfoil(airfoilArray[choiceOPTAirfoilIndex]);
                 design.computeSimpleParameters(airfoilArray[choiceOPTAirfoilIndex]);
-                thick.append(design.maxThickness);
+                thicknesses.append(design.maxThickness);
             } else {
                 solvers->importAirfoil(design.newAirfoilData);
                 design.computeSimpleParameters(design.newAirfoilData);
-                thick.append(design.maxThickness);
+                thicknesses.append(design.maxThickness);
             }
         }
 
@@ -2912,7 +3008,7 @@ void airfoilDisplay::startXfoilInThread(int step,int n){
 
             solvers->importAirfoil(design.newAirfoilData);
             design.computeSimpleParameters(design.newAirfoilData);
-            thick.append(design.maxThickness);
+            thicknesses.append(design.maxThickness);
         }
 
 
@@ -2934,12 +3030,18 @@ void airfoilDisplay::startXfoilInThread(int step,int n){
 
 
 
-    double tmp = 0;
     for(int i = 0; i<threadNum;i++){
         historyData.append(testSolve[i]->onceData);
-
-        tmp = testSolve[i]->onceData.K + testSolve[i]->onceData.cM * cmWeighted + thick[i] * thickWeighted;
-        resultK.append(tmp);
+        const fixClResult &result = testSolve[i]->onceData;
+        const double thickness = thicknesses[i];
+        const bool satisfiesConstraints =
+            std::isfinite(result.K) && std::isfinite(result.cM) &&
+            std::isfinite(thickness) &&
+            thickness >= minThicknessConstraint &&
+            thickness <= maxThicknessConstraint &&
+            result.cM >= minMomentConstraint &&
+            result.cM <= maxMomentConstraint;
+        resultK.append(satisfiesConstraints ? result.K : 0.0);
     }
 
     qDeleteAll(testSolve);
@@ -3534,6 +3636,10 @@ void airfoilDisplay::saveOptimizationSetting(){
     GaSetting.cstRadio = cstRadioEdit->text().toDouble();
     input.Re = optReEdit->text().toInt();
     input.Ma = optMaEdit->text().toDouble();
+    minThicknessConstraint = minThicknessConstraintSpinBox->value() / 100.0;
+    maxThicknessConstraint = maxThicknessConstraintSpinBox->value() / 100.0;
+    minMomentConstraint = minMomentConstraintSpinBox->value();
+    maxMomentConstraint = maxMomentConstraintSpinBox->value();
 
     choiceOPTAirfoilIndex = choiceCombobox->currentIndex();
     if(targetRadioButtonB->isChecked()){
@@ -3548,26 +3654,40 @@ void airfoilDisplay::saveOptimizationSetting(){
     threadNum = ThreadNumEdit->text().toInt();
 
 
-    if(GaSetting.eliteNum % threadNum !=0 || GaSetting.initialEliteNum % threadNum !=0 ){
-        QMessageBox::information(nullptr,"警告","初始种群或精英种群都应该被线程数量整除");
-
-    }else if(GaSetting.eliteNum * 2 > GaSetting.initialEliteNum){
-        QMessageBox::information(nullptr,"警告","初始种群至少是精英种群数量的两倍");
-    }
-    else if(GaSetting.cstRadio >= 1 && GaSetting.cstRadio<=0){
-        QMessageBox::information(nullptr,"警告","变量上限应小于1大于0");
-
-    }
-
-    else{
-
-        //saveAllSetting();
+    if (minThicknessConstraint > maxThicknessConstraint) {
+        QMessageBox::information(this, "警告", "厚度约束下限不能大于上限");
+    } else if (minMomentConstraint > maxMomentConstraint) {
+        QMessageBox::information(this, "警告", "力矩约束下限不能大于上限");
+    } else if (threadNum <= 0) {
+        QMessageBox::information(this, "警告", "线程数量必须大于0");
+    } else if (GaSetting.initialEliteNum <= 0 || GaSetting.eliteNum <= 0) {
+        QMessageBox::information(this, "警告", "种群数量必须大于0");
+    } else if (GaSetting.eliteNum % threadNum != 0 ||
+               GaSetting.initialEliteNum % threadNum != 0) {
+        QMessageBox::information(
+            this, "警告", "初始种群或精英种群都应该被线程数量整除");
+    } else if (GaSetting.eliteNum > GaSetting.initialEliteNum / 2) {
+        QMessageBox::information(this, "警告",
+                                 "初始种群至少是精英种群数量的两倍");
+    } else if (GaSetting.step <= 0) {
+        QMessageBox::information(this, "警告", "迭代步数必须大于0");
+    } else if (!std::isfinite(GaSetting.cstRadio) ||
+               GaSetting.cstRadio <= 0.0 || GaSetting.cstRadio >= 1.0) {
+        QMessageBox::information(this, "警告", "变量上限应小于1大于0");
+    } else if (!std::isfinite(GaSetting.val) || GaSetting.val <= 0.0 ||
+               GaSetting.val > 1.0) {
+        QMessageBox::information(this, "警告", "数值精度必须大于0且不超过1");
+    } else if (!std::isfinite(GaSetting.selection) ||
+               GaSetting.selection <= 0.0) {
+        QMessageBox::information(this, "警告", "轮盘赌指数必须大于0");
+    } else if (!std::isfinite(GaSetting.cross) || GaSetting.cross < 0.0 ||
+               GaSetting.cross > 1.0 ||
+               !std::isfinite(GaSetting.variation) ||
+               GaSetting.variation < 0.0 || GaSetting.variation > 1.0) {
+        QMessageBox::information(this, "警告", "交叉和变异概率必须在0到1之间");
+    } else {
         startOpt();
     }
-
-
-
-
 }
 void airfoilDisplay::cancelOptimizationSetting(){
     GaSetting.step = historySettingData[14];GaSetting.selection = historySettingData[15];GaSetting.initialEliteNum = historySettingData[16];GaSetting.eliteNum = historySettingData[17];
@@ -3626,19 +3746,6 @@ void airfoilDisplay::updateAirfoilList(const QVector<QVector<QVector<double>>>&a
 
 
 }
-void airfoilDisplay::updateThickWeightedValueLabel(const int value){
-    QString text = QString::number(static_cast<double>(value) / 100);
-    thickWeighted = value;
-    thickWeightedValueLabel->setText(text);
-
-}
-void airfoilDisplay::updateCmWeightedValueLabel(const int value){
-    QString text = QString::number(static_cast<double>(value) / 100);
-    cmWeighted = value;
-    cmWeightedValueLabel->setText(text);
-
-}
-
 void airfoilDisplay::updateDesignCSTPoint(){
     QVector<double>cstx;
     QVector<double>csty;
@@ -4618,7 +4725,9 @@ void airfoilDisplay::showModifyAirfoilDialog(){
 
 airfoilDisplay::~airfoilDisplay(){
 
-    delete exp;
+    optimizationCancelRequested.store(true);
+    if (optimizationFuture.isRunning())
+        optimizationFuture.waitForFinished();
     delete designModel;
     for(airfoilSolve *solver:airfoilSolveModelArray)
         delete solver;

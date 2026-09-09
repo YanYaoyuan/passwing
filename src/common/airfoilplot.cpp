@@ -1,6 +1,7 @@
 #include "common/airfoilplot.h"
 
 #include <QMouseEvent>
+#include <QPainter>
 #include <QResizeEvent>
 
 namespace {
@@ -435,6 +436,30 @@ void AirfoilPlot::setRangeDragEnabled(bool enabled)
     if (enabled)
         interactions |= QCP::iRangeDrag;
     setInteractions(interactions);
+}
+
+void AirfoilPlot::setFrameAppearance(const QPen &pen, qreal cornerRadius)
+{
+    m_framePen = pen;
+    m_frameCornerRadius = qMax<qreal>(0.0, cornerRadius);
+    update();
+}
+
+void AirfoilPlot::paintEvent(QPaintEvent *event)
+{
+    QCustomPlot::paintEvent(event);
+
+    if (m_framePen.style() == Qt::NoPen)
+        return;
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, m_frameCornerRadius > 0.0);
+    painter.setPen(m_framePen);
+    painter.setBrush(Qt::NoBrush);
+
+    const qreal inset = qMax<qreal>(0.5, m_framePen.widthF() / 2.0);
+    const QRectF frameRect = QRectF(rect()).adjusted(inset, inset, -inset, -inset);
+    painter.drawRoundedRect(frameRect, m_frameCornerRadius, m_frameCornerRadius);
 }
 
 void AirfoilPlot::queueReplot()

@@ -1,18 +1,19 @@
 ﻿#ifndef AIRFOILOPTIMIZATION_H
 #define AIRFOILOPTIMIZATION_H
+#include <QString>
 #include <QVector>
 struct GaParameters
 {
-    double val;                                                             //精度
-    double variation;                                                       //变异概率
-    double selection;                                                       //轮盘赌指数
-    double cross;                                                           //交叉概率
-    int initialEliteNum;                                                    //初始化种群
-    int eliteNum;                                                           //精英种群
-    int step;                                                               //迭代步数
-    int solutionsNum;                                                             //
+    double val = 0.00001;                                                   //精度
+    double variation = 0.05;                                                //变异概率
+    double selection = 1.4;                                                 //轮盘赌指数
+    double cross = 0.95;                                                     //交叉概率
+    int initialEliteNum = 20;                                                //初始化种群
+    int eliteNum = 20;                                                       //精英种群
+    int step = 10;                                                           //迭代步数
+    int solutionsNum = 0;                                                    //CST参数数量
 
-    double cstRadio;                                                        //cst变化倍率
+    double cstRadio = 0.5;                                                   //cst变化倍率
 };
 
 class airfoilOptimization
@@ -42,12 +43,12 @@ public:
     QVector<QVector<double>>initialCst;                                  //初始cst种群
     QVector<double>bestSolution;
     QVector<double>bestCST;
-    int bestIndex;
+    int bestIndex = -1;
     QVector<double>historySolution;
     QVector<double>historyResult;
     QVector<QVector<double>>historyChromosomeSequenceDec;
     GaParameters valueList;
-    int lengthChromsome;                                                    //染色体长度
+    int lengthChromsome = 1;                                                //染色体长度
     QVector<QVector<double>>chromosomeSequenceDec;                       //十进制cst参数
 
 
@@ -66,7 +67,8 @@ public:
 
     //once
 
-    void initialElite();                        //初始化CST参数
+    bool initialElite();                        //初始化CST参数
+    QString validationError() const;
     void getLengthChromsome();                 //获取最大染色体长度
     void generateSelectionProbability();      //生成选中概率区间（轮盘赌）
 
