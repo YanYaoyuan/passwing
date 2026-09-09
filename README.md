@@ -53,10 +53,13 @@ cmake --build --preset release --parallel
 推荐使用 MSYS2 MinGW64，并确保所有依赖均来自同一套 MinGW64 工具链：
 
 ```bash
-pacman -S --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja \
+pacman -S --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake \
+  mingw-w64-x86_64-ninja \
   mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts \
   mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-eigen3 \
-  mingw-w64-x86_64-hdf5 mingw-w64-x86_64-vtk
+  mingw-w64-x86_64-exprtk mingw-w64-x86_64-fast_float \
+  mingw-w64-x86_64-hdf5 mingw-w64-x86_64-nlohmann-json \
+  mingw-w64-x86_64-utf8cpp mingw-w64-x86_64-vtk
 ```
 
 在 MSYS2 MinGW64 终端中执行：
@@ -69,6 +72,24 @@ cmake --build --preset release --parallel
 
 如已安装 Qt WebEngine，可去掉 `-DPASSWING_ENABLE_WEBENGINE=OFF`。未安装时程序会使用
 `QTextBrowser` 作为 HTML 页面回退方案。
+
+已有 MSVC 依赖环境时，也可以直接双击仓库根目录的 `build-windows.bat`。脚本会使用
+Visual Studio x64 Release 模式完成配置、编译和运行库部署，输出目录为
+`out/package/PassWing-Windows-x64`，同时生成同名 ZIP 包。本机依赖路径与默认值不同时，
+可在 PowerShell 中覆盖参数：
+
+```powershell
+.\scripts\build-windows.ps1 `
+  -QtRoot "C:\path\to\Qt" `
+  -VtkRoot "C:\path\to\VTK" `
+  -Hdf5Root "C:\path\to\HDF5" `
+  -EigenRoot "C:\path\to\Eigen3"
+```
+
+GitHub Actions 的 Linux 和 Windows 任务也会生成完整的可分发包，并分别上传
+`PassWing-Linux-x64` 和 `PassWing-Windows-x64` 成果物。包内包含程序、Qt 插件、
+VTK/HDF5 等运行库，以及 `setting`、`resoure`、`theoreticalFramework`、
+`libaries`、`help` 和 `Profili.mdb`（仓库中存在时）。
 
 ## 开发
 
@@ -95,17 +116,29 @@ cmake --build --preset debug --parallel
 ## 目录结构
 
 ```text
-AirfoilClass/          翼型设计与分析
-WingClass/             机翼设计与分析
-AirPlaneClass/         飞机设计与稳定性分析
-propellersClass/       螺旋桨设计与分析
-geometryClass/         几何模型及模型库
-saas/                  CFD、网格、任务和结果查看
-PublicClass/           通用数据、数学和绘图组件
-publicWidgetClass/     通用 Qt 控件
-resoure/               Qt 资源文件
-theoreticalFramework/  理论说明文档
+src/
+  app/                  程序入口与主窗口
+  airfoil/              翼型设计、分析与优化
+  wing/                 机翼设计、VLM 与优化
+  aircraft/             飞机设计、稳定性与整机分析
+  propeller/            螺旋桨设计、BEMT 与 VLM
+  common/               公共数据、数学、文件和绘图设施
+  widgets/              可复用 Qt 控件
+  geometry/             几何模型及 VTK 加载
+  dynamics/             动力学模型
+  chat/                 对话界面
+  saas/                 CFD、网格、任务和结果查看
+  help/                 桌面帮助集成
+cmake/                  依赖发现和编译选项
+resoure/                Qt 资源文件（保留历史拼写）
+libaries/               翼型与螺旋桨数据（保留历史拼写）
+setting/                运行配置
+help/                   HTML 帮助及媒体素材
+theoreticalFramework/   理论说明文档
 ```
+
+模块边界、依赖方向和新增代码约定见
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## 运行注意事项
 

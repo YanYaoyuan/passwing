@@ -27,12 +27,12 @@ PassWing 是一个功能野心很大的单体 Qt/C++ 桌面工程：它把翼型
 - C/C++ 与 CMake 共约 217,643 行。
 - 排除三份 QCustomPlot、两份 XFoil 后，自研/集成层约 60,940 行。
 - 最大的自研实现文件：
-  - `WingClass/wingdisplay.cpp`：5,966 行
-  - `propellersClass/propellerdisplay.cpp`：5,923 行
-  - `AirfoilClass/airfoildisplay.cpp`：4,630 行
-  - `AirPlaneClass/airplanedisplay.cpp`：3,717 行
-  - `WingClass/wingvlm.cpp`：3,654 行
-  - `propellersClass/propellervlm.cpp`：3,025 行
+  - `src/wing/wingdisplay.cpp`：5,966 行
+  - `src/propeller/propellerdisplay.cpp`：5,923 行
+  - `src/airfoil/airfoildisplay.cpp`：4,630 行
+  - `src/aircraft/airplanedisplay.cpp`：3,717 行
+  - `src/wing/wingvlm.cpp`：3,654 行
+  - `src/propeller/propellervlm.cpp`：3,025 行
   - `saas/funClass/structwidget.cpp`：2,905 行
 
 ### 2.2 做了什么
@@ -145,7 +145,7 @@ main.cpp
 
 #### P0-03 项目保存会写错数据并可能越界崩溃
 
-证据：`PublicClass/myfile.cpp:344-395` 保存螺旋桨，`390` 行却写 `tailArray[i].num`，而不是 `propellerArray[i].num`。
+证据：`src/common/myfile.cpp:344-395` 保存螺旋桨，`390` 行却写 `tailArray[i].num`，而不是 `propellerArray[i].num`。
 
 影响：桨叶数被尾翼数组污染；当螺旋桨数量大于尾翼数量时直接越界。保存成功对话框仍无条件显示（`mainwindow.cpp:723-728`）。
 
@@ -155,10 +155,10 @@ main.cpp
 
 证据：
 
-- `PublicClass/myfile.cpp:23-49` 未检查行数和 `QStringList` 长度就访问 `[0]`、`[1]`。
-- `PublicClass/myfile.cpp:64` 在 EOF/空行时执行 `line.at(0)`。
+- `src/common/myfile.cpp:23-49` 未检查行数和 `QStringList` 长度就访问 `[0]`、`[1]`。
+- `src/common/myfile.cpp:64` 在 EOF/空行时执行 `line.at(0)`。
 - 后续各数组按一条数组的长度索引其他数组，没有一致性校验。
-- `PublicClass/myfile.cpp:454-459` 的 `clearData()` 只清翼型、机翼和尾翼，漏掉螺旋桨与飞机；再次打开项目会混入旧对象。
+- `src/common/myfile.cpp:454-459` 的 `clearData()` 只清翼型、机翼和尾翼，漏掉螺旋桨与飞机；再次打开项目会混入旧对象。
 - 文件对话框称其为 `.xml`，内容并不是 XML，也没有格式版本。
 
 影响：用户选择截断文件即可崩溃；失败读取可能先清掉当前内存数据；多次打开项目产生幽灵对象。
@@ -167,7 +167,7 @@ main.cpp
 
 #### P0-05 `airfoilSolve` 可写爆固定栈数组且早退泄漏
 
-证据：`AirfoilClass/airfoilsolve.cpp:62-76,136-160,301-321` 用 `double x[600]` 等固定数组，却按未限制的 `airfoilData.size()` 写入；每个点也默认至少两列。`XFoil` 用 `new` 创建，多个初始化/`specal()` 失败分支在 `delete` 前返回（如 `151-160,204-207,312-321,342-345`）。
+证据：`src/airfoil/airfoilsolve.cpp:62-76,136-160,301-321` 用 `double x[600]` 等固定数组，却按未限制的 `airfoilData.size()` 写入；每个点也默认至少两列。`XFoil` 用 `new` 创建，多个初始化/`specal()` 失败分支在 `delete` 前返回（如 `151-160,204-207,312-321,342-345`）。
 
 影响：超过 600 点会破坏栈；畸形点会越界；重复失败会泄漏大对象。
 
@@ -175,7 +175,7 @@ main.cpp
 
 #### P0-06 QCustomPlot 图对象被双重删除
 
-证据：`AirfoilClass/airfoilexplorer.cpp:1847-1854` 先调用 `plot->removeGraph(graphPtr)`，随后又 `delete graphPtr`。QCustomPlot 自身在 `PublicClass/qcustomplot.cpp:14446-14458` 明确实现为 remove 并 delete。
+证据：`src/airfoil/airfoilexplorer.cpp:1847-1854` 先调用 `plot->removeGraph(graphPtr)`，随后又 `delete graphPtr`。QCustomPlot 自身在 `src/common/qcustomplot.cpp:14446-14458` 明确实现为 remove 并 delete。
 
 影响：清图时 double free / heap corruption，崩溃位置可能远离根因。
 
@@ -183,7 +183,7 @@ main.cpp
 
 #### P0-07 通用样条函数在上界外访问越界
 
-证据：`PublicClass/mymath.cpp:397-452` 在 `xq > x.last()` 时把区间索引递增到 `n-1`，然后读取只有 `n-1` 个元素的 `b[i]`、`d[i]`。
+证据：`src/common/mymath.cpp:397-452` 在 `xq > x.last()` 时把区间索引递增到 `n-1`，然后读取只有 `n-1` 个元素的 `b[i]`、`d[i]`。
 
 影响：任何高于采样上界的查询都可能崩溃或返回随机值；该函数被推力插值等路径复用。
 
@@ -191,7 +191,7 @@ main.cpp
 
 #### P0-08 螺旋桨设计可能返回未初始化的 `K`
 
-证据：`propellersClass/propellerdesign.cpp:712-725` 中 `K` 只在 `while (fabs(K2-K1) > tolerance)` 内赋值；当 `tolerance >= 1` 或 NaN 时直接返回未初始化值。
+证据：`src/propeller/propellerdesign.cpp:712-725` 中 `K` 只在 `while (fabs(K2-K1) > tolerance)` 内赋值；当 `tolerance >= 1` 或 NaN 时直接返回未初始化值。
 
 影响：后续几何/性能计算被随机值污染，且结果可能看似正常。
 
@@ -222,7 +222,7 @@ main.cpp
 
 证据：
 
-- `propellerBemt::readInterDrag` 在列表少于 3 项的分支仍访问 `list.at(1)`（`propellersClass/propellerbemt.cpp:36-64`），空列表还在 `41` 行访问 0。
+- `propellerBemt::readInterDrag` 在列表少于 3 项的分支仍访问 `list.at(1)`（`src/propeller/propellerbemt.cpp:36-64`），空列表还在 `41` 行访问 0。
 - `getReIndex` 对空数组返回 -1，对单元素数组访问 `len-2`（`414-423`）；调用方立即用返回值索引（`259-266`）。
 - `initialAnalyse` 对空 `spanW` 调用 `last()`（`112`）。
 - `computeForce/iterCompute` 对零 RPM、零来流、零半径、零桨叶数、空极曲线有多处除法（`183-207,323-328`）。
@@ -237,8 +237,8 @@ main.cpp
 
 Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
-- `airplaneStability` 的全部导数、速度、质量（构造函数为空，`AirPlaneClass/airplanestability.cpp:4-8`）。
-- `wingDefinition` 的 `realChord/vMeshType/uMeshType/span/area/aspectRatio/...`（`WingClass/wingdefinition.h:45-105`）。
+- `airplaneStability` 的全部导数、速度、质量（构造函数为空，`src/aircraft/airplanestability.cpp:4-8`）。
+- `wingDefinition` 的 `realChord/vMeshType/uMeshType/span/area/aspectRatio/...`（`src/wing/wingdefinition.h:45-105`）。
 - `wingVLM`、`propellerVLM` 的网格数、密度、模式和固定系数。
 - `propellerBemt` 的诱导因子、温度、粘度和半径。
 - 两个遗传优化器的 `bestIndex`、染色体长度等。
@@ -249,7 +249,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-02 稳定性分析实际上尚未实现
 
-证据：`AirPlaneClass/airplanestability.cpp:10-85` 只生成 12 个扰动速度并打印；`72-74` 行明确把力和导数计算留作注释。旋转扰动 `46-51` 使用 `point3d` 的逐分量乘法（`PublicClass/structDefinition.h:79-81`），而刚体旋转速度应涉及叉积。
+证据：`src/aircraft/airplanestability.cpp:10-85` 只生成 12 个扰动速度并打印；`72-74` 行明确把力和导数计算留作注释。旋转扰动 `46-51` 使用 `point3d` 的逐分量乘法（`src/common/structDefinition.h:79-81`），而刚体旋转速度应涉及叉积。
 
 影响：界面入口 `mainwindow.cpp:659-660` 调用“飞机稳定性分析”，但无法得到可信的稳定导数或模态。
 
@@ -257,7 +257,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-03 遗传算法状态在翼段之间串值
 
-证据：`WingClass/wingoptimization.cpp:25-53` 的 `newSymbolTmp` 在外层翼段循环之外创建，循环中不清空，却每次把整个累积数组 append 到 `symbolCSTArray`。
+证据：`src/wing/wingoptimization.cpp:25-53` 的 `newSymbolTmp` 在外层翼段循环之外创建，循环中不清空，却每次把整个累积数组 append 到 `symbolCSTArray`。
 
 影响：第二个及以后翼段使用错误的 CST 符号索引，搜索空间和生成几何与设置不一致。
 
@@ -265,7 +265,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-04 机翼分段位置不是累计和
 
-证据：`WingClass/wingoptimization.cpp:1252-1255` 构造站位时写成相邻两段长度之和；三段以上时第三个站位缺少第一段累计量。
+证据：`src/wing/wingoptimization.cpp:1252-1255` 构造站位时写成相邻两段长度之和；三段以上时第三个站位缺少第一段累计量。
 
 影响：优化出的多段机翼几何站位错误，可能自交或翼展不符目标。
 
@@ -273,7 +273,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-05 翼型优化参数校验存在恒假条件和除零
 
-证据：`AirfoilClass/airfoildisplay.cpp:3544-3559` 先用 `threadNum` 做取模而不检查 0；CST 比例判断写成 `>=1 && <=0`，永远为假。
+证据：`src/airfoil/airfoildisplay.cpp:3544-3559` 先用 `threadNum` 做取模而不检查 0；CST 比例判断写成 `>=1 && <=0`，永远为假。
 
 影响：线程数为 0 时崩溃；非法比例进入优化。
 
@@ -281,7 +281,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-06 数学工具 `minIndex` 返回错误索引
 
-证据：`PublicClass/mymath.cpp:343-355` 找到更小误差时执行 `j++`，而不是 `j=i`。
+证据：`src/common/mymath.cpp:343-355` 找到更小误差时执行 `j++`，而不是 `j=i`。
 
 影响：返回的是“刷新最小值的次数”，不是最近元素位置，调用方会选错数据。
 
@@ -291,7 +291,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 例子：
 
-- `linearInterpolation` 只拒绝 size 0，size 1 在外推分支访问 `[1]`（`PublicClass/mymath.cpp:169-205`）。
+- `linearInterpolation` 只拒绝 size 0，size 1 在外推分支访问 `[1]`（`src/common/mymath.cpp:169-205`）。
 - `getMaxIndex/minV/maxV` 等对空数组访问 `[0]`（`320-373`）。
 - `getInterpolateThrust` 固定读取前三条曲线且不验证 RPM/曲线长度（`16-23`）。
 - 插值没有统一检查 x 是否有序、重复或有限；同类函数有的 throw、有的返回 0、有的 `qFatal` 结束进程。
@@ -301,7 +301,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-08 CST 拟合显式求逆且未检查秩
 
-证据：`AirfoilClass/airfoildesign.cpp:161-175` 使用 `(SᵀS).inverse()SᵀY`，仅用首个系数是否 NaN 判断成功。
+证据：`src/airfoil/airfoildesign.cpp:161-175` 使用 `(SᵀS).inverse()SᵀY`，仅用首个系数是否 NaN 判断成功。
 
 影响：正规方程放大条件数；重复点、点数不足或退化几何产生不稳定系数/Inf，后续仍可能标记成功。
 
@@ -309,7 +309,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P1-09 `wingDefinition::computeWingMessage` 的模型不变量不完整
 
-证据：`WingClass/wingdefinition.h:107-142` 未检查数组同长、至少两站、弦长/面积非零、grid 非空；`meshNum` 无论 `isSymmetry` 都乘 2；`realArea` 从未赋值；`gridV[0]` 直接访问。
+证据：`src/wing/wingdefinition.h:107-142` 未检查数组同长、至少两站、弦长/面积非零、grid 非空；`meshNum` 无论 `isSymmetry` 都乘 2；`realArea` 从未赋值；`gridV[0]` 直接访问。
 
 影响：面积、展弦比、网格数可能错误或越界，且 getter 返回未定义字段。
 
@@ -319,8 +319,8 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 证据：
 
-- `AirPlaneClass/airplanedisplay.cpp:152-156,212-218` 启动 `QtConcurrent` 后立即 `waitForFinished()`，GUI 线程仍冻结。
-- `propellerDesign::startXfoil` 与 `wingDisplay::startVLMInThread` 用忙轮询 + `QCoreApplication::processEvents()`（`propellersClass/propellerdesign.cpp:503-513`、`WingClass/wingdisplay.cpp:5247-5257`）。
+- `src/aircraft/airplanedisplay.cpp:152-156,212-218` 启动 `QtConcurrent` 后立即 `waitForFinished()`，GUI 线程仍冻结。
+- `propellerDesign::startXfoil` 与 `wingDisplay::startVLMInThread` 用忙轮询 + `QCoreApplication::processEvents()`（`src/propeller/propellerdesign.cpp:503-513`、`src/wing/wingdisplay.cpp:5247-5257`）。
 - 求解器 QObject 仍属于创建它的 GUI 线程，却被线程池直接调用；取消、窗口销毁和重复点击没有统一生命周期协议。
 
 影响：长算例卡界面；`processEvents` 允许同一操作重入，可能同时修改数组或删除对象；退出时存在 use-after-free 风险。
@@ -331,7 +331,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 代码大量读取 `QDir::currentPath()/libaries/...`，但快照中没有 `libaries` 目录。受影响的包括机场模型、Profili/UIUC/WindAI 翼型、极曲线、APC 螺旋桨几何/性能。帮助代码与 `help/help.html` 也缺失。
 
-影响：库窗口为空，BEMT 没有极曲线，主页机场与帮助不可用；部分路径会静默失败，部分会崩溃或 `exit(1)`（`AirfoilClass/airfoillibary.cpp:257-259`）。
+影响：库窗口为空，BEMT 没有极曲线，主页机场与帮助不可用；部分路径会静默失败，部分会崩溃或 `exit(1)`（`src/airfoil/airfoillibary.cpp:257-259`）。
 
 修复：明确哪些数据可分发；放入资源包/安装目录并在 CMake install 阶段安装；启动时做依赖自检；禁止依赖当前工作目录。
 
@@ -382,7 +382,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 - 三份 QCustomPlot 约 13 万行；其中两份 `.cpp` 完全相同，三份 `.h` 完全相同，另一份 `.cpp` 仅有分叉。
 - 两份 XFoil 各约 1.2 万行，已经发生分叉。
-- `publicWidgetClass/callout.*` 带 Qt 示例版权声明；QCustomPlot 文件声明商业/GPL 许可。
+- `src/widgets/callout.*` 带 Qt 示例版权声明；QCustomPlot 文件声明商业/GPL 许可。
 
 影响：修复无法同步、编译变慢、许可证义务不清。静态检查还在 XFoil 中报告多个可疑 buffer size 告警，需要结合上游版本核查，不能简单忽略。
 
@@ -408,7 +408,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P2-06 死代码、空壳和注释噪声
 
-`airplaneDesign`、`airfoilMesh`、`glWidget` 基本为空；`airfoilcompute.h` 复制了冲突的 include guard 和另一个 `airfoilAnalyse` 声明；`WingClass/wingdefinition.cpp` 定义了头文件已内联定义的默认构造，并定义未声明的五参数构造，但该 `.cpp` 又没有进入 CMake。大量被注释实现长期保留。
+`airplaneDesign`、`airfoilMesh`、`glWidget` 基本为空；`airfoilcompute.h` 复制了冲突的 include guard 和另一个 `airfoilAnalyse` 声明；`src/wing/wingdefinition.cpp` 定义了头文件已内联定义的默认构造，并定义未声明的五参数构造，但该 `.cpp` 又没有进入 CMake。大量被注释实现长期保留。
 
 建议：删除无用途代码或明确放入实验分支；编译 target 必须覆盖所有声称属于产品的源；启用 `-Wall -Wextra -Wpedantic` 和 warnings-as-errors（第三方例外）。
 
@@ -432,7 +432,7 @@ Cppcheck 在全工程报告 164 个 `uninitMemberVar`。高风险例子包括：
 
 #### P2-10 产品完整性细节
 
-- `chatWidget` 只是把输入原样前缀返回，却显示为 “ChatGPT”（`chatClass/chatwidget.cpp:36-50`）。
+- `chatWidget` 只是把输入原样前缀返回，却显示为 “ChatGPT”（`src/chat/chatwidget.cpp:36-50`）。
 - `mainWindow` 关于页写版本 1.4，而 CMake 项目版本为 0.1。
 - 主窗口最小尺寸固定 1500×900，对小屏/缩放不友好。
 - 很多保存函数不把打开/写入失败反馈给用户，却显示“保存成功”。

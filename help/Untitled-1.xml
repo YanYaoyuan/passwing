@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="GB2312"?>
+<QtHelpProject version="1.0">
+  <namespace>bookmisClient.myhelp</namespace>
+  <virtualFolder>doc</virtualFolder>
+  <filterSection>
+    <toc>
+        <section title="首页" ref="./demoHtml/index.html">
+            <section title="用户登录" ref="./demoHtml/userlogon.html"></section>
+            <section title="书籍查询" ref="./demoHtml/bookquery.html"></section>
+            <section title="续借书籍" ref="./demoHtml/Renewal.html"></section>
+            <section title="系统管理" ref="./demoHtml/systemmanage.html"></section>
+            <section title="日志管理" ref="./demoHtml/log.html"></section>
+            <section title="关于" ref="./demoHtml/about.html"></section>
+        </section>
+    </toc>
+    <keywords>
+        <keyword name = "登录" ref="./demoHtml/userlogon.html"></keyword>
+        <keyword name = "续借" ref="./demoHtml/Renewal.html"></keyword>
+        <keyword name = "日志" ref="./demoHtml/log.html"></keyword>
+    </keywords>
+    <files>
+      <file>demoHtml/*.html</file>
+      <file>image/*.png</file>
+    </files>
+  </filterSection>
+</QtHelpProject>

@@ -8,17 +8,84 @@ jobs:
   linux:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build qtbase5-dev \
+          sudo apt-get install -y build-essential cmake ninja-build pax-utils qtbase5-dev \
             libqt5charts5-dev libqt5opengl5-dev qttools5-dev \
             libeigen3-dev libhdf5-dev libvtk9-dev libvtk9-qt-dev
+      - name: Verify toolchain and dependencies
+        run: |
+          gcc --version
+          g++ --version
+          cmake --version
+          ninja --version
+          dpkg-query -W build-essential qtbase5-dev libqt5charts5-dev \
+            libqt5opengl5-dev qttools5-dev libeigen3-dev libhdf5-dev \
+            libvtk9-dev libvtk9-qt-dev
       - name: Configure
         run: cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF
       - name: Build
         run: cmake --build --preset release --parallel 2
+      - name: Package
+        run: |
+          set -euo pipefail
+          package_name="PassWing-Linux-x64"
+          package_root="out/package/${package_name}"
+          executable="out/build/release/PassWing"
+
+          rm -rf "$package_root"
+          mkdir -p "$package_root/lib"
+          cp "$executable" "$package_root/PassWing"
+
+          for item in setting resoure theoreticalFramework libaries help Profili.mdb; do
+            if [ -e "$item" ]; then
+              cp -a "$item" "$package_root/"
+            fi
+          done
+
+          qt_plugin_dir="$(qmake -query QT_INSTALL_PLUGINS)"
+          cp -a "$qt_plugin_dir" "$package_root/plugins"
+
+          {
+            lddtree -l "$executable"
+            while IFS= read -r plugin; do
+              lddtree -l "$plugin"
+            done < <(find "$package_root/plugins" -type f -name '*.so')
+          } | sort -u > out/package/linux-runtime-libraries.txt
+
+          while IFS= read -r library; do
+            if [ ! -f "$library" ]; then
+              continue
+            fi
+            case "$(basename "$library")" in
+              PassWing|ld-linux*.so*|libc.so.*|libdl.so.*|libm.so.*|libpthread.so.*|librt.so.*|libresolv.so.*|libutil.so.*)
+                continue
+                ;;
+            esac
+            cp -L "$library" "$package_root/lib/"
+          done < out/package/linux-runtime-libraries.txt
+
+          printf '%s\n' \
+            '#!/usr/bin/env bash' \
+            'set -e' \
+            'app_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"' \
+            'export LD_LIBRARY_PATH="$app_dir/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"' \
+            'export QT_PLUGIN_PATH="$app_dir/plugins"' \
+            'exec "$app_dir/PassWing" "$@"' \
+            > "$package_root/run-passwing.sh"
+          chmod +x "$package_root/PassWing" "$package_root/run-passwing.sh"
+
+          tar -czf "out/package/${package_name}.tar.gz" -C out/package "$package_name"
+          test -x "$package_root/PassWing"
+          test -f "$package_root/plugins/platforms/libqxcb.so"
+      - name: Upload Linux package
+        uses: actions/upload-artifact@v7
+        with:
+          name: PassWing-Linux-x64
+          path: out/package/PassWing-Linux-x64.tar.gz
+          if-no-files-found: error
 
   windows:
     runs-on: windows-2022
@@ -26,22 +93,73 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
           update: true
           install: >-
             git
+            mingw-w64-x86_64-gcc
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-charts
             mingw-w64-x86_64-qt6-tools
             mingw-w64-x86_64-eigen3
+            mingw-w64-x86_64-exprtk
+            mingw-w64-x86_64-fast_float
             mingw-w64-x86_64-hdf5
+            mingw-w64-x86_64-nlohmann-json
+            mingw-w64-x86_64-utf8cpp
+            mingw-w64-x86_64-vtk
+      - name: Verify toolchain and dependencies
+        run: |
+          gcc --version
+          g++ --version
+          cmake --version
+          ninja --version
+          pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-qt6-base \
+            mingw-w64-x86_64-qt6-charts mingw-w64-x86_64-qt6-tools \
+            mingw-w64-x86_64-eigen3 mingw-w64-x86_64-exprtk \
+            mingw-w64-x86_64-fast_float mingw-w64-x86_64-hdf5 \
+            mingw-w64-x86_64-nlohmann-json mingw-w64-x86_64-utf8cpp \
             mingw-w64-x86_64-vtk
       - name: Configure
         run: cmake --preset release -DPASSWING_ENABLE_WEBENGINE=OFF
+        env:
+          CC: gcc
+          CXX: g++
       - name: Build
         run: cmake --build --preset release --parallel 2
+      - name: Package
+        run: |
+          set -euo pipefail
+          package_name="PassWing-Windows-x64"
+          package_root="out/package/${package_name}"
+          executable="out/build/release/PassWing.exe"
+
+          rm -rf "$package_root"
+          mkdir -p "$package_root"
+          cp "$executable" "$package_root/PassWing.exe"
+
+          for item in setting resoure theoreticalFramework libaries help Profili.mdb; do
+            if [ -e "$item" ]; then
+              cp -a "$item" "$package_root/"
+            fi
+          done
+
+          cp -f /mingw64/bin/*.dll "$package_root/"
+          windeployqt6 --release --compiler-runtime --no-translations \
+            --dir "$package_root" "$package_root/PassWing.exe"
+
+          cd out/package
+          cmake -E tar cf "${package_name}.zip" --format=zip -- "$package_name"
+          test -f "$package_name/PassWing.exe"
+          test -f "$package_name/platforms/qwindows.dll"
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v7
+        with:
+          name: PassWing-Windows-x64
+          path: out/package/PassWing-Windows-x64.zip
+          if-no-files-found: error
