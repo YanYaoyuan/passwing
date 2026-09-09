@@ -11,6 +11,8 @@ target_sources(passwing PRIVATE
     qcustomplot.cpp
     qcustomplot.h
     structDefinition.h
+    vtkfontutils.cpp
+    vtkfontutils.h
 )
 
 # OTHER/ contains an archived QCustomPlot copy and is intentionally not built.

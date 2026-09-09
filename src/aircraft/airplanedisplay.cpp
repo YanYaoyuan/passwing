@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QButtonGroup>
 #include "widgets/datapointdialog.h"
+#include "common/vtkfontutils.h"
 #include "airplanedisplay.h"
 #include <iostream>
 #if defined(_MSC_VER) && (_MSC_VER >= 1600)
@@ -862,12 +863,8 @@ void airplaneDisplay::initialAirplaneShowModel(){
     textActorA->GetTextProperty()->SetJustificationToLeft();
     textActorA->GetTextProperty()->SetVerticalJustificationToBottom();
 
-    QString path1 = QDir::currentPath() + "/resoure/language/chinese.ttf";
-    //QString path1 = ":/language/chinese.ttf";
-    std::string path2 = path1.toUtf8().constData();
     textProperty = vtkSmartPointer<vtkTextProperty>::New();
-    textProperty->SetFontFamily(VTK_FONT_FILE);
-    textProperty->SetFontFile(path2.c_str()); // 设置支持中文的字体文件
+    passwing::configureVtkChineseFont(textProperty);
     textProperty->SetFontSize(18); // 初始字体大小
     textProperty->SetColor(1.0, 1.0, 1.0); // 白色文本
     textActorA->SetTextProperty(textProperty);
@@ -2514,8 +2511,8 @@ void airplaneDisplay::changeUIForAirplaneSpanResult(){
 }
 void airplaneDisplay::updateGLTextA(QString text){
 
-    std::string tmp = text.toStdString();
-    textActorA->SetInput(tmp.c_str());
+    const QByteArray utf8Text = text.toUtf8();
+    textActorA->SetInput(utf8Text.constData());
     textActorA->Modified();
     airplaneDisplayWidgetA->renderWindow()->Render();
 
