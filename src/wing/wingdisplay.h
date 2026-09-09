@@ -10,6 +10,8 @@
 #include <QLayout>
 #include <QDialog>
 #include <QTreeWidget>
+
+#include <memory>
 #include "widgets/glwidget.h"
 #include "wing/wingdefinition.h"
 #include "wing/wingvlm.h"
@@ -642,11 +644,13 @@ private:
 
 
 
-    wingOptimization *optModel = nullptr;
+    std::unique_ptr<wingOptimization> optModel;
     WingGaParameters optSetting;
 
-    int wingWorkNum;
+    int wingWorkNum = 0;
     int wingThreadNum = 10;
+    bool wingOptimizationRunning = false;
+    int activeOptimizationWingIndex = -1;
     //result
     QVector<double>clArray;
     QVector<double>cdArray;
@@ -659,8 +663,8 @@ private:
     QVector<QVector<double>>xSpan;
     QVector<QVector<double>>xSpanLiftA;
     QVector<QVector<double>>xSpanLiftB;
-    int meshNum;
-    bool isChangeRealVal;
+    int meshNum = 0;
+    bool isChangeRealVal = false;
 
 
 

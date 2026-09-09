@@ -1,4 +1,4 @@
-﻿#ifndef AIRFOILDISPLAY_H
+#ifndef AIRFOILDISPLAY_H
 #define AIRFOILDISPLAY_H
 
 #include <QObject>
@@ -16,6 +16,10 @@
 #include <QMenu>
 #include <QRadioButton>
 #include <QTextEdit>
+#include <QFuture>
+
+#include <atomic>
+#include <memory>
 #include "airfoiloptimization.h"
 #include "common/airfoilplot.h"
 #include "airfoil/airfoildesign.h"
@@ -400,12 +404,16 @@ private:
     QRadioButton *targetRadioButtonA; QRadioButton *targetRadioButtonB;
 
     QLabel *choseAirfoilLabel; QLineEdit *valueEdit;
-    QLabel *thickWeightedLabel; QLabel *cmWeightedLabel;
-    QLabel *thickWeightedValueLabel; QLabel *cmWeightedValueLabel;
-
-    QSlider *thickWeightedSlider; QSlider *cmWeightedSlider;
-    int thickWeighted = 0,cmWeighted = 0;//权重值
-    QVector<double>thick;//存放厚度
+    QLabel *thicknessConstraintLabel; QLabel *momentConstraintLabel;
+    QLabel *thicknessConstraintSeparator; QLabel *momentConstraintSeparator;
+    QDoubleSpinBox *minThicknessConstraintSpinBox;
+    QDoubleSpinBox *maxThicknessConstraintSpinBox;
+    QDoubleSpinBox *minMomentConstraintSpinBox;
+    QDoubleSpinBox *maxMomentConstraintSpinBox;
+    double minThicknessConstraint = 0.03;
+    double maxThicknessConstraint = 0.40;
+    double minMomentConstraint = -1.0;
+    double maxMomentConstraint = 1.0;
 
     QLabel *targetLabel;
 
@@ -419,17 +427,19 @@ private:
 
     QVector<fixClResult>historyData;              //历史迭代总结果
     QVector<double>resultK;                       //历史迭代目标结果
-    double oriK;                                  //原始目标结果
-    double optK;
+    double oriK = 0.0;                            //原始目标结果
+    double optK = 0.0;
     QVector<QVector<double>>optAirfoil;
 
 
 
-    airfoilOptimization *exp;
+    std::unique_ptr<airfoilOptimization> exp;
+    QFuture<void> optimizationFuture;
+    std::atomic_bool optimizationCancelRequested{false};
     GaParameters GaSetting;
-    int threadNum;
-    int workerNum;
-    int optStep;
+    int threadNum = 1;
+    int workerNum = 0;
+    int optStep = 0;
 
     bool optCpxIsChange = false;
     //翼型显示
@@ -439,8 +449,6 @@ private:
     //slot
 
     void cancelOptimizationSetting();
-    void updateThickWeightedValueLabel(const int);
-    void updateCmWeightedValueLabel(const int);
     void drawOptIndexAirfoil(const int);
     void drawOptAirfoil(const QVector<QVector<double>>&);
 
@@ -464,7 +472,7 @@ public:
 
     //func
 
-    void initialGa();
+    bool initialGa();
     void startOpt();
     void solveGa();
     void startXfoilInThread(int step,int n);

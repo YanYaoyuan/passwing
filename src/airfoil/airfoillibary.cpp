@@ -558,7 +558,7 @@ void airfoilLibary::writeAirfoilParameters(){
 
             for(int i = 0; i<listLengthC;i++){
                 QTextStream stream(&file);
-                stream<<AirfoilC[i].Name.left(AirfoilC[i].Name.length() - 4)<<"    "<<AirfoilC[i].ThicknessLoaction<<"    "<<AirfoilC[i].MaxThickness<<"    "<<AirfoilC[i].CamberLoaction
+                stream<<AirfoilC[i].Name<<"    "<<AirfoilC[i].ThicknessLoaction<<"    "<<AirfoilC[i].MaxThickness<<"    "<<AirfoilC[i].CamberLoaction
                     <<"    "<<AirfoilC[i].MaxCamber<<"    "<<AirfoilC[i].minRadius<<"    "<<AirfoilC[i].trailingAngle<<"\n";
             }
             file.close();
@@ -1125,7 +1125,7 @@ QVector<QVector<double>> airfoilLibary::readCST()
         // -------- 翼型名称 --------
         //airfoilNameArrayC.reserve(nAirfoils);
         for (int a = 0; a < nAirfoils; ++a) {
-            const QString airfoilName = QString("windAI%1").arg(a, 4, 10, QChar('0'));
+            const QString airfoilName = QString("windAI%1").arg(a + 1, 4, 10, QChar('0'));
             AirfoilC[a].Name = airfoilName;
             airfoilNameArrayC.append(airfoilName);
         }

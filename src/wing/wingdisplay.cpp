@@ -6,11 +6,16 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QCoreApplication>
 #include <QMessageBox>
+#include <QScopedValueRollback>
 #include <QFileDialog>
 #include <QtCore/QTextStream>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QThread>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include "widgets/datapointdialog.h"
 #include "vtkCellData.h"
 #include "dynamics/torsionalspring.h"
@@ -554,34 +559,48 @@ void wingDisplay::changeProgressUpdate(const int value){
 }
 void wingDisplay::startOptimizationWing(){
 
+    if (wingOptimizationRunning) {
+        QMessageBox::information(this, "提示", "机翼优化正在运行，请稍候");
+        return;
+    }
     if(wingDataArray.isEmpty()){
         QMessageBox::information(this,"警告","未添加机翼");
         return;
     }
 
 
+    QScopedValueRollback<bool> runningGuard(wingOptimizationRunning, true);
+
     if(!checkOptSetting()){
 
     }else{
+        activeOptimizationWingIndex = wingChoiceIndex;
+
+        wingDefinition newWingData =
+            wingDataArray[activeOptimizationWingIndex];
+
+        auto optimizer = std::make_unique<wingOptimization>(optSetting,
+                                                             newWingData);
+        const QString validationError = optimizer->validationError();
+        if (!validationError.isEmpty()) {
+            QMessageBox::information(this, "警告", validationError);
+            return;
+        }
+        if (!optimizer->initialElite()) {
+            QMessageBox::information(this, "警告", "机翼遗传算法初始化失败");
+            return;
+        }
+        optModel = std::move(optimizer);
 
         changeUIForWingIter();
         updateGLTextA("开始.......");
         emit emitWingProgressBarValue(0);
-        wingDefinition newWingData = wingDataArray[wingChoiceIndex];
-
-        if(iterSeriesA->count() > 0)
+        if (iterSeriesA->count() > 0)
             iterSeriesA->clear();
-        iterXAxisA->setRange(0,optSetting.step - 1);
-        iterYAxisA->setRange(0,50);
+        iterXAxisA->setRange(0, optSetting.step - 1);
+        iterYAxisA->setRange(0, 50);
 
-        if(!optModel){
-            optModel = new wingOptimization();
-
-        }
-        optModel->setModel(optSetting,newWingData);
         meshNum = newWingData.MeshNum();
-
-        optModel->initialElite();
         wingWorkNum = optSetting.initialEliteNum / wingThreadNum;
 
         int progressValue;
@@ -590,14 +609,35 @@ void wingDisplay::startOptimizationWing(){
             for(int j = 0;j<wingWorkNum;j++){
                 startVLMInThread(i,j);
                 if(i == 0 && j == 0){
+                    if (cdArray.isEmpty() || xSpan.isEmpty() ||
+                        xSpanLiftA.isEmpty() || xSpanLiftB.isEmpty()) {
+                        QMessageBox::information(this, "警告",
+                                                 "VLM未返回有效优化结果");
+                        return;
+                    }
                     drawOptIterSeries(i,cdArray[0]);
                     drawOptSpanLiftSeries(xSpan[0],xSpanLiftA[0],xSpanLiftB[0]);
                 }
             }
-            if(i >= 1){
-                for(int k = 0; k < cdArray.length(); k++){
-                    if(cdArray[k] > optModel->bestSolutionArray[i - 1] * 6)
-                        cdArray[k] = 0;
+            const int expectedResults = i == 0
+                ? optSetting.initialEliteNum : optSetting.eliteNum;
+            if (cdArray.size() != expectedResults ||
+                optWingDataArray.size() != expectedResults) {
+                QMessageBox::information(this, "警告",
+                                         "VLM优化结果数量不完整");
+                return;
+            }
+            if (i >= 1 && optModel->bestSolutionArray.size() >= i) {
+                const double previousBest = optModel->bestSolutionArray[i - 1];
+                for (double &result : cdArray) {
+                    if (!std::isfinite(result) ||
+                        (previousBest > 0.0 && result > previousBest * 6.0))
+                        result = 0.0;
+                }
+            } else {
+                for (double &result : cdArray) {
+                    if (!std::isfinite(result))
+                        result = 0.0;
                 }
             }
 
@@ -609,6 +649,13 @@ void wingDisplay::startOptimizationWing(){
 
             optModel->sortResult(cdArray);
             optModel->updateChromomeSequenceDec();
+
+            if (optModel->wingChromosomeSequenceDec.size() !=
+                    optSetting.eliteNum ||
+                optModel->bestIndex < 0) {
+                QMessageBox::information(this, "警告", "机翼优化结果不完整");
+                return;
+            }
 
             optModel->selectionChromosomeSequenceDec();
 
@@ -662,16 +709,18 @@ void wingDisplay::startOptimizationWing(){
 void wingDisplay::finishWingOptimization(){
     //保存优化后结果
     updateGLTextA("");
-    bestWingData.name = "opt_" + wingDataArray[wingChoiceIndex].name;
-    bestWingData.airfoilArray = wingDataArray[wingChoiceIndex].airfoilArray;
-    bestWingData.cstPointYArray = wingDataArray[wingChoiceIndex].cstPointYArray;
-    bestWingData.airfoilNameArray = wingDataArray[wingChoiceIndex].airfoilNameArray;
-    bestWingData.gridU = wingDataArray[wingChoiceIndex].gridU;
-    bestWingData.gridV = wingDataArray[wingChoiceIndex].gridV;
-    bestWingData.uMeshType = wingDataArray[wingChoiceIndex].uMeshType;
-    bestWingData.vMeshType = wingDataArray[wingChoiceIndex].vMeshType;
-    bestWingData.airfoilInputType = wingDataArray[wingChoiceIndex].airfoilInputType;
-    bestWingData.cstArray = wingDataArray[wingChoiceIndex].cstArray;
+    const int index = activeOptimizationWingIndex;
+    if (index < 0 || index >= wingDataArray.size())
+        return;
+    bestWingData.name = "opt_" + wingDataArray[index].name;
+    bestWingData.airfoilArray = wingDataArray[index].airfoilArray;
+    bestWingData.cstPointYArray = wingDataArray[index].cstPointYArray;
+    bestWingData.airfoilNameArray = wingDataArray[index].airfoilNameArray;
+    bestWingData.gridU = wingDataArray[index].gridU;
+    bestWingData.gridV = wingDataArray[index].gridV;
+    bestWingData.uMeshType = wingDataArray[index].uMeshType;
+    bestWingData.vMeshType = wingDataArray[index].vMeshType;
+    bestWingData.airfoilInputType = wingDataArray[index].airfoilInputType;
     bestWingData.spanW[0] = 0;
 
 
@@ -1182,7 +1231,7 @@ void wingDisplay::initialWingOptimizationWidget(){
     optSettingLabel[4]->setText("交叉概率");optSettingEdit[4]->setText("0.9");
     optSettingLabel[5]->setText("变异概率");optSettingEdit[5]->setText("0.05");
     optSettingLabel[6]->setText("翼型变化率");optSettingEdit[6]->setText("0.5");
-    optSettingLabel[7]->setText("翼型精度");optSettingEdit[7]->setText("1-e6");
+    optSettingLabel[7]->setText("翼型精度");optSettingEdit[7]->setText("1e-6");
 
     for(int i = 0;i<8;i++)
         connect(optSettingEdit[i],&QLineEdit::textChanged,this,&wingDisplay::updateOptSetting);
@@ -2873,6 +2922,8 @@ void wingDisplay::startAnalyseWing(){
             allFinished = false;
         }
         QCoreApplication::processEvents();
+        if (!allFinished)
+            QThread::msleep(1);
     }
 
 
@@ -5109,6 +5160,10 @@ void wingDisplay::startVLMInThread(int step,int n){
     wingDefinition wingData;
 
     int index1;
+    if (activeOptimizationWingIndex < 0 ||
+        activeOptimizationWingIndex >= wingDataArray.size())
+        return;
+
     double v = wingVelocitySetEdit->text().toDouble();
     double h = wingHeightSetEdit->text().toDouble();
     double f = wingLiftSetEdit->text().toDouble();
@@ -5134,7 +5189,8 @@ void wingDisplay::startVLMInThread(int step,int n){
 
             wingData = optModel->initialWingDataArray[index1];
             if (index1 == 0) { // 先计算一次初始
-                solvers->initialGeometry(wingDataArray[wingChoiceIndex]);
+                solvers->initialGeometry(
+                    wingDataArray[activeOptimizationWingIndex]);
 
             } else {
 
@@ -5189,7 +5245,15 @@ void wingDisplay::startVLMInThread(int step,int n){
 
 
     for(int i = 0;i<wingThreadNum;i++){
-        double k = testSolve[i]->fixCl / testSolve[i]->fixCd;
+        double k = 0.0;
+        if (std::isfinite(testSolve[i]->fixCl) &&
+            std::isfinite(testSolve[i]->fixCd) &&
+            std::abs(testSolve[i]->fixCd) >
+                std::numeric_limits<double>::epsilon()) {
+            k = testSolve[i]->fixCl / testSolve[i]->fixCd;
+            if (!std::isfinite(k))
+                k = 0.0;
+        }
         cdArray.append(k);
         colorContourArray.append(testSolve[i]->contourArray);
         xABArray.append(testSolve[i]->xyA);
@@ -5408,7 +5472,9 @@ void wingDisplay::updateOptSetting(){
     if(edit){
         double tmp = edit->text().toDouble();
         int index = edit->property("edit").toInt();
-        if(tmp <= optMinVal[index] || tmp >= optMaxVal[index]){
+        const double lower = std::min(optMinVal[index], optMaxVal[index]);
+        const double upper = std::max(optMinVal[index], optMaxVal[index]);
+        if (!std::isfinite(tmp) || tmp <= lower || tmp >= upper) {
             edit->setStyleSheet(warningEditStyle);
         }else{
             edit->setStyleSheet(nothingEditStyle);
@@ -5418,6 +5484,11 @@ void wingDisplay::updateOptSetting(){
 }
 
 bool wingDisplay::checkOptSetting(){
+    if (wingChoiceIndex < 0 || wingChoiceIndex >= wingDataArray.size() ||
+        wingChoiceIndex >= optRealSettingArray.size()) {
+        QMessageBox::information(this, "警告", "机翼优化数据不完整");
+        return false;
+    }
 
     optSetting = optRealSettingArray[wingChoiceIndex];
 
@@ -5432,15 +5503,61 @@ bool wingDisplay::checkOptSetting(){
 
     optSetting.solutionsNum = 24;
 
-
-    wingDataArray[wingChoiceIndex].airfoilInputType = false;
-    for(int i = 0;i<wingDataArray[wingChoiceIndex].spanW.length();i++){
-
-
-        airfoilDesign design(12);
-        design.buildBenrnstein(wingDataArray[wingChoiceIndex].airfoilArray[i]);
-        wingDataArray[wingChoiceIndex].cstArray.append(design.cstParameter);
+    if (wingThreadNum <= 0 || optSetting.initialEliteNum <= 0 ||
+        optSetting.eliteNum <= 0 || optSetting.step <= 0) {
+        QMessageBox::information(this, "警告", "线程、种群和迭代数量必须大于0");
+        return false;
     }
+    if (optSetting.initialEliteNum % wingThreadNum != 0 ||
+        optSetting.eliteNum % wingThreadNum != 0) {
+        QMessageBox::information(
+            this, "警告", "初始种群和精英种群必须能被线程数量整除");
+        return false;
+    }
+    if (optSetting.eliteNum > optSetting.initialEliteNum / 2) {
+        QMessageBox::information(this, "警告",
+                                 "初始种群至少是精英种群数量的两倍");
+        return false;
+    }
+    if (!std::isfinite(optSetting.selection) || optSetting.selection <= 0.0 ||
+        !std::isfinite(optSetting.cross) || optSetting.cross < 0.0 ||
+        optSetting.cross > 1.0 || !std::isfinite(optSetting.variation) ||
+        optSetting.variation < 0.0 || optSetting.variation > 1.0 ||
+        !std::isfinite(optSetting.cstRadio) || optSetting.cstRadio <= 0.0 ||
+        optSetting.cstRadio >= 1.0 || !std::isfinite(optSetting.val) ||
+        optSetting.val <= 0.0) {
+        QMessageBox::information(this, "警告", "遗传算法参数超出有效范围");
+        return false;
+    }
+
+    const double velocity = wingVelocitySetEdit->text().toDouble();
+    const double height = wingHeightSetEdit->text().toDouble();
+    const double lift = wingLiftSetEdit->text().toDouble();
+    if (!std::isfinite(velocity) || velocity <= 0.0 ||
+        !std::isfinite(height) || height < 0.0 ||
+        !std::isfinite(lift) || lift == 0.0) {
+        QMessageBox::information(this, "警告", "设计速度、高度或升力无效");
+        return false;
+    }
+
+    wingDefinition &wing = wingDataArray[wingChoiceIndex];
+    QVector<QVector<double>> cstParameters;
+    cstParameters.reserve(wing.spanW.size());
+    for (int i = 0; i < wing.spanW.size(); ++i) {
+        airfoilDesign design(12);
+        if (i >= wing.airfoilArray.size()) {
+            QMessageBox::information(this, "警告", "机翼翼型截面数据不完整");
+            return false;
+        }
+        design.buildBenrnstein(wing.airfoilArray[i]);
+        if (design.cstParameter.size() != optSetting.solutionsNum) {
+            QMessageBox::information(this, "警告", "机翼CST参数生成失败");
+            return false;
+        }
+        cstParameters.append(design.cstParameter);
+    }
+    wing.cstArray = cstParameters;
+    wing.airfoilInputType = false;
 
     optSetting.spanVal = optCombox[0]->currentText().toDouble();
     optSetting.chordVal = optCombox[1]->currentText().toDouble();
@@ -5449,7 +5566,6 @@ bool wingDisplay::checkOptSetting(){
     optSetting.dihedralAngleVal = optCombox[4]->currentText().toDouble();
 
     return true;
-
 }
 void wingDisplay::exportChartData(PlotWidget *chart) {
     QString fileName = QFileDialog::getSaveFileName(nullptr, "Save Data", "", "Text Files (*.txt)");

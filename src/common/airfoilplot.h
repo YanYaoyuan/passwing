@@ -150,6 +150,7 @@ public:
     void setBackgroundBrush(const QBrush &brush) { setBackground(brush); }
     void setRenderHint(QPainter::RenderHint, bool = true) { setAntialiasedElements(QCP::aeAll); }
     void setRangeDragEnabled(bool enabled);
+    void setFrameAppearance(const QPen &pen, qreal cornerRadius = 0.0);
     QSize getRealSize() const { return size(); }
     void queueReplot();
 
@@ -163,6 +164,7 @@ signals:
     void chartResized(int width, int height);
 
 protected:
+    void paintEvent(QPaintEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -179,6 +181,8 @@ private:
     AirfoilPlotAxis *m_horizontalAxis = nullptr;
     AirfoilPlotAxis *m_verticalAxis = nullptr;
     QCPTextElement *m_titleElement = nullptr;
+    QPen m_framePen = Qt::NoPen;
+    qreal m_frameCornerRadius = 0.0;
     bool m_destroying = false;
 };
 

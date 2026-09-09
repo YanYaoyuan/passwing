@@ -1,208 +1,228 @@
-﻿#include "airfoiloptimization.h"
+#include "airfoiloptimization.h"
 #include <QRandomGenerator>
 
-#include <QDebug>
-airfoilOptimization::airfoilOptimization(const GaParameters&value,const QVector<double>&CST) {
+#include <QtGlobal>
 
-    valueList = value;
-    cstArray = CST;
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <numeric>
+#include <random>
+airfoilOptimization::airfoilOptimization(const GaParameters &value,
+                                         const QVector<double> &CST)
+    : cstArray(CST), valueList(value)
+{
 }
 
-void airfoilOptimization::initialElite(){
-    double max, min, cst;
-    int symbol;
-    QVector<int>newSymbol;
-     int cstVal = static_cast<int>(1 / valueList.val);
+QString airfoilOptimization::validationError() const
+{
+    if (valueList.solutionsNum <= 0 || valueList.solutionsNum != cstArray.size())
+        return QStringLiteral("CST参数数量与优化变量数量不一致");
+    if ((valueList.solutionsNum % 2) != 0)
+        return QStringLiteral("CST参数数量必须为偶数");
+    if (valueList.initialEliteNum <= 0 || valueList.eliteNum <= 0)
+        return QStringLiteral("种群数量必须大于0");
+    if (valueList.initialEliteNum < valueList.eliteNum)
+        return QStringLiteral("初始种群数量不能小于精英种群数量");
+    if (valueList.step <= 0)
+        return QStringLiteral("迭代步数必须大于0");
+    if (!std::isfinite(valueList.val) || valueList.val <= 0.0 ||
+        valueList.val > 1.0 ||
+        (1.0 / valueList.val) > std::numeric_limits<int>::max())
+        return QStringLiteral("数值精度必须在有效范围内");
+    if (!std::isfinite(valueList.cstRadio) ||
+        valueList.cstRadio <= 0.0 || valueList.cstRadio >= 1.0)
+        return QStringLiteral("变量上限必须大于0且小于1");
+    if (!std::isfinite(valueList.selection) || valueList.selection <= 0.0)
+        return QStringLiteral("轮盘赌指数必须大于0");
+    if (!std::isfinite(valueList.cross) ||
+        valueList.cross < 0.0 || valueList.cross > 1.0)
+        return QStringLiteral("交叉概率必须在0到1之间");
+    if (!std::isfinite(valueList.variation) ||
+        valueList.variation < 0.0 || valueList.variation > 1.0)
+        return QStringLiteral("变异概率必须在0到1之间");
 
-    for(int i = 0; i < valueList.solutionsNum; i++){
-        max = cstArray[i] * (1 + valueList.cstRadio);
-        min = cstArray[i] * (1 - valueList.cstRadio);
-        MaxCstArrayDec.append(max);
-        MinCstArrayDec.append(min);
-
-        if(cstArray[i] != 0)
-            symbol = cstArray[i] / abs(cstArray[i]);
-        else
-            symbol = 1;
-        newSymbol.append(symbol);
+    const double scale = 1.0 / valueList.val;
+    for (double value : cstArray) {
+        if (!std::isfinite(value))
+            return QStringLiteral("CST参数包含无效数值");
+        const double largestMagnitude =
+            std::abs(value) * (1.0 + valueList.cstRadio) * scale;
+        if (largestMagnitude > std::numeric_limits<int>::max())
+            return QStringLiteral("CST参数超出当前编码范围");
     }
 
+    return {};
+}
 
+bool airfoilOptimization::initialElite()
+{
+    if (!validationError().isEmpty())
+        return false;
 
-    symbolArray = newSymbol;
-    int cstMax, cstMin;
+    MaxCstArrayDec.clear();
+    MinCstArrayDec.clear();
+    symbolArray.clear();
+    initialCst.clear();
+    chromosomeSequenceBin.clear();
+    chromosomeSequenceDec.clear();
+    sortArray.clear();
+    selectProbability.clear();
+    bestSolution.clear();
+    bestCST.clear();
+    historySolution.clear();
+    historyResult.clear();
+    historyChromosomeSequenceDec.clear();
+    bestIndex = -1;
 
-    for(int i = 0; i < valueList.initialEliteNum; i++){
-        QVector<double>temp1;
-        for(int j = 0;j < valueList.solutionsNum; j++){
-            cstMax = abs(static_cast<int>(MaxCstArrayDec[j] * cstVal));
-            cstMin = abs(static_cast<int>(MinCstArrayDec[j] * cstVal));
-            //cst = static_cast<double>((QRandomGenerator::global()->generateDouble()*(cstMax - cstMin) + cstMin) * valueList.val) * newSymbol[j];
-            cst = double(generateRandomInt(cstMin,cstMax) * valueList.val * newSymbol[j]);
-            temp1.append(cst);
+    const int cstVal = static_cast<int>(1.0 / valueList.val);
+    for (int i = 0; i < valueList.solutionsNum; ++i) {
+        const double boundA = cstArray[i] * (1.0 + valueList.cstRadio);
+        const double boundB = cstArray[i] * (1.0 - valueList.cstRadio);
+        MaxCstArrayDec.append(std::max(boundA, boundB));
+        MinCstArrayDec.append(std::min(boundA, boundB));
+        symbolArray.append(cstArray[i] < 0.0 ? -1 : 1);
+    }
+
+    initialCst.reserve(valueList.initialEliteNum);
+    initialCst.append(cstArray);
+    for (int i = 1; i < valueList.initialEliteNum; ++i) {
+        QVector<double> chromosome;
+        chromosome.reserve(valueList.solutionsNum);
+        for (int j = 0; j < valueList.solutionsNum; ++j) {
+            const int scaledA =
+                std::abs(static_cast<int>(MaxCstArrayDec[j] * cstVal));
+            const int scaledB =
+                std::abs(static_cast<int>(MinCstArrayDec[j] * cstVal));
+            const double cst = static_cast<double>(
+                generateRandomInt(scaledA, scaledB)) *
+                valueList.val * symbolArray[j];
+            chromosome.append(cst);
         }
-
-        initialCst.append(temp1);
-
+        initialCst.append(chromosome);
     }
-
 
     generateSelectionProbability();
     getLengthChromsome();
+    return true;
 }
 
-void airfoilOptimization::sortResult(const QVector<double>&result){
-    QVector<double>P = result;
-    QVector<double>T;
+void airfoilOptimization::sortResult(const QVector<double> &result)
+{
+    QVector<double> combinedResult = result;
+    if (!historyResult.isEmpty())
+        combinedResult += historyResult;
 
-    int len;
-    if(result.length() == valueList.initialEliteNum){
+    if (combinedResult.size() < valueList.eliteNum)
+        return;
 
-        len = valueList.initialEliteNum;
-
-    }
-    else{
-        for(int i = 0; i<historyResult.length();i++)
-            P.append(historyResult[i]);
-
-        len = valueList.eliteNum * 2;
-
+    const double invalidFitness = std::numeric_limits<double>::lowest();
+    for (double &fitness : combinedResult) {
+        if (!std::isfinite(fitness))
+            fitness = invalidFitness;
     }
 
+    sortArray.resize(combinedResult.size());
+    std::iota(sortArray.begin(), sortArray.end(), 0);
+    std::stable_sort(sortArray.begin(), sortArray.end(),
+                     [&combinedResult](int left, int right) {
+                         return combinedResult[left] > combinedResult[right];
+                     });
 
+    historyResult.clear();
+    historyResult.reserve(valueList.eliteNum);
+    for (int i = 0; i < valueList.eliteNum; ++i)
+        historyResult.append(combinedResult[sortArray[i]]);
 
-
-    if(!sortArray.isEmpty())
-        QVector<int>().swap(sortArray);
-
-
-    for(int i = 0; i < len; i++)
-        sortArray.append(i);
-    for(int i = 0; i < len; i++){
-        for(int j = 0; j < len - i - 1; j++){
-            if(P[j] < P[j + 1]){
-                double temp = P[j];
-                P[j] = P[j + 1];
-                P[j + 1] = temp;
-
-                int ind = sortArray[j];
-                sortArray[j] = sortArray[j + 1];
-                sortArray[j + 1] = ind;
-            }
-        }
-    }
-    for(int i = 0; i<valueList.eliteNum;i++){
-        T.append(P[i]);
-    }
-
-    historyResult = T;
-    bestSolution.append(P[0]);
-    bestIndex = sortArray[0];
-
-    double maxP = max(bestSolution);
-    historySolution.append(maxP);
+    const double generationBest = historyResult.first();
+    bestSolution.append(generationBest);
+    bestIndex = sortArray.first();
+    historySolution.append(max(bestSolution));
 }
 
 
-void airfoilOptimization::selectionChromosomeSequenceDec(){
+void airfoilOptimization::selectionChromosomeSequenceDec()
+{
+    if (historyChromosomeSequenceDec.size() < valueList.eliteNum ||
+        chromosomeSequenceDec.size() < valueList.eliteNum ||
+        selectProbability.size() != valueList.eliteNum + 1)
+        return;
 
-    QVector<double>randA;        //轮盘赌决定概率
-    QVector<int>randS;           //轮盘赌选择索引
-    double tmp;
-    for(int i = 0; i < valueList.eliteNum; i++){
-        tmp = QRandomGenerator::global()->bounded(1.0);
-        randA.append(tmp);
+    QVector<int> selectedIndices;
+    selectedIndices.reserve(valueList.eliteNum);
+    for (int i = 0; i < valueList.eliteNum; ++i) {
+        const double draw = QRandomGenerator::global()->bounded(1.0);
+        const auto upper = std::upper_bound(selectProbability.cbegin(),
+                                            selectProbability.cend(), draw);
+        const int rawIndex =
+            static_cast<int>(std::distance(selectProbability.cbegin(), upper)) - 1;
+        selectedIndices.append(qBound(0, rawIndex,valueList.eliteNum - 1));
     }
 
-    int c;
-    for(int i = 0; i < valueList.eliteNum; i++){
-        bool ok = true;
-        int b = 0;
-        while(ok){
-            if(randA[i] >= selectProbability[b] && randA[i] < selectProbability[b + 1])
-                ok = false;
-            b = b + 1;
-        }
-        c = b - 1;
-        randS.append(c);
+    for (int i = 0; i < valueList.eliteNum; ++i)
+        chromosomeSequenceDec[i] =
+            historyChromosomeSequenceDec[selectedIndices[i]];
 
-    }
-    for(int i = 0;i<valueList.eliteNum;i++){
-        chromosomeSequenceDec[i] = historyChromosomeSequenceDec[randS[i]];
-    }
-    for(int i = valueList.eliteNum / 2;i<valueList.eliteNum;i++){
-        if(valueList.variation * 2 > QRandomGenerator::global()->bounded(1.0)){
+    for (int i = valueList.eliteNum / 2; i < valueList.eliteNum; ++i) {
+        if (valueList.variation * 2.0 >
+            QRandomGenerator::global()->bounded(1.0))
             changeCst(chromosomeSequenceDec[i]);
-        }
     }
-    sortArray = randS;
-
+    sortArray = selectedIndices;
 }
 
 
 void airfoilOptimization::updateChromosomeSequenceDec(){
+    QVector<QVector<double>> candidates = chromosomeSequenceDec.isEmpty()
+        ? initialCst
+        : chromosomeSequenceDec + historyChromosomeSequenceDec;
+    if (sortArray.size() < valueList.eliteNum)
+        return;
 
-    QVector<QVector<double>>newChromosomeSequenceDec;
-
-    QVector<double>tmp;
-    int index;
-    int len = valueList.eliteNum;
-
-
-
-    if(chromosomeSequenceDec.isEmpty()){
-        for(int i = 0; i < len; i++){
-            index = sortArray[i];
-            tmp = initialCst[index];
-            newChromosomeSequenceDec.append(tmp);
-
-
-        }
-
-    }
-    else{
-        QVector<QVector<double>>allChromosomeSequenceDec;
-        allChromosomeSequenceDec = chromosomeSequenceDec;
-        for(int i = 0; i<len;i++ ){
-            QVector<double>historicalParameters;
-            for(int j = 0; j< valueList.solutionsNum;j++)
-                historicalParameters.append(historyChromosomeSequenceDec[i][j]);
-            allChromosomeSequenceDec.append(historicalParameters);
-        }
-
-
-        for(int i = 0; i < len; i++){
-            index = sortArray[i];
-            tmp = allChromosomeSequenceDec[index];
-            newChromosomeSequenceDec.append(tmp);
+    QVector<QVector<double>> newChromosomeSequenceDec;
+    newChromosomeSequenceDec.reserve(valueList.eliteNum);
+    for (int i = 0; i < valueList.eliteNum; ++i) {
+        const int index = sortArray[i];
+        if (index < 0 || index >= candidates.size())
+            return;
+        const QVector<double> &candidate = candidates[index];
+        if (candidate.size() != valueList.solutionsNum)
+            return;
+        newChromosomeSequenceDec.append(candidate);
     }
 
-    }
+    if (newChromosomeSequenceDec.isEmpty())
+        return;
 
-
-    bestCST = newChromosomeSequenceDec[0];
+    bestCST = newChromosomeSequenceDec.first();
     chromosomeSequenceDec = newChromosomeSequenceDec;
     historyChromosomeSequenceDec = newChromosomeSequenceDec;
-
-
 }
 
-void airfoilOptimization::decToBin(){
+void airfoilOptimization::decToBin()
+{
+    if (chromosomeSequenceDec.size() < valueList.eliteNum ||
+        symbolArray.size() != valueList.solutionsNum ||
+        lengthChromsome <= 0)
+        return;
 
-    int cstVal = static_cast<int>(1 / valueList.val);
-    int tmp;
-    QString stringTmp;
-
-    QVector<QVector<QString>>newChromosomeSequenceBin;
+    const int cstVal = static_cast<int>(1.0 / valueList.val);
+    QVector<QVector<QString>> newChromosomeSequenceBin;
+    newChromosomeSequenceBin.reserve(valueList.eliteNum);
     checkValue();
-    for(int i = 0; i < valueList.eliteNum; i++){
-        QVector<QString>newString;
-        for(int j = 0; j < valueList.solutionsNum; j++){
-            tmp = chromosomeSequenceDec[i][j] * cstVal * symbolArray[j];
-            stringTmp = QString::number(tmp,2);
+    for (int i = 0; i < valueList.eliteNum; ++i) {
+        if (chromosomeSequenceDec[i].size() != valueList.solutionsNum)
+            return;
 
-            newString.append(stringTmp);
-
+        QVector<QString> newString;
+        newString.reserve(valueList.solutionsNum);
+        for (int j = 0; j < valueList.solutionsNum; ++j) {
+            const int magnitude = std::max(
+                0, static_cast<int>(chromosomeSequenceDec[i][j] *
+                                    cstVal * symbolArray[j]));
+            newString.append(QString::number(magnitude, 2)
+                                 .rightJustified(lengthChromsome,
+                                                 QLatin1Char('0')));
         }
         newChromosomeSequenceBin.append(newString);
     }
@@ -210,208 +230,208 @@ void airfoilOptimization::decToBin(){
     chromosomeSequenceBin = newChromosomeSequenceBin;
 }
 
-void airfoilOptimization::binToDec(){
-    int len = sortArray.length();
-    int tmp;
-    QString stringTmp;
-    bool ok;
-    double newTemp = 0;
-    QVector<QVector<double>>newChromosomeSequenceDec;
-    for(int i = 0; i < len;i++){
+void airfoilOptimization::binToDec()
+{
+    if (symbolArray.size() != valueList.solutionsNum)
+        return;
 
-        QVector<double>newDouble;
-        for(int j = 0; j < valueList.solutionsNum;j++){
-            stringTmp = chromosomeSequenceBin[i][j];
-            tmp = stringTmp.toInt(&ok,2);
-            if(ok)
-                newTemp = static_cast<double>(tmp) * valueList.val * symbolArray[j];
+    QVector<QVector<double>> newChromosomeSequenceDec;
+    newChromosomeSequenceDec.reserve(chromosomeSequenceBin.size());
+    for (const QVector<QString> &encodedChromosome : chromosomeSequenceBin) {
+        if (encodedChromosome.size() != valueList.solutionsNum)
+            return;
 
-            newDouble.append(newTemp);
-
+        QVector<double> newDouble;
+        newDouble.reserve(valueList.solutionsNum);
+        for (int j = 0; j < valueList.solutionsNum; ++j) {
+            bool ok = false;
+            const int magnitude = encodedChromosome[j].toInt(&ok, 2);
+            if (!ok)
+                return;
+            newDouble.append(static_cast<double>(magnitude) * valueList.val *
+                             symbolArray[j]);
         }
         newChromosomeSequenceDec.append(newDouble);
     }
     chromosomeSequenceDec = newChromosomeSequenceDec;
-
+    checkValue();
 }
 
 
 
-void airfoilOptimization::overlappingOperations(){
-    QVector<int>randBeginCst;
-    QVector<int>randLengthCst;
-    QVector<int>randBegin;
-    QVector<int>randLength;
-    int step = valueList.eliteNum / 2;
-    int beginA, beginB;
-    for(int i = 0; i < step; i++){
-        beginA = QRandomGenerator::global()->bounded(valueList.solutionsNum / 2 - 1);
+void airfoilOptimization::overlappingOperations()
+{
+    const int halfSolutions = valueList.solutionsNum / 2;
+    const int step = valueList.eliteNum / 2;
+    if (step <= 0 || halfSolutions <= 0 || lengthChromsome <= 0 ||
+        chromosomeSequenceBin.size() < step * 2)
+        return;
+
+    QVector<int> randBeginCst;
+    QVector<int> randLengthCst;
+    QVector<int> randBegin;
+    QVector<int> randLength;
+    for (int i = 0; i < step; ++i) {
+        const int beginA = QRandomGenerator::global()->bounded(halfSolutions);
         randBeginCst.append(beginA);
-        randLengthCst.append(valueList.solutionsNum / 2 - beginA);
-        beginB = QRandomGenerator::global()->bounded(lengthChromsome - 1);
+        randLengthCst.append(halfSolutions - beginA);
+        const int beginB = QRandomGenerator::global()->bounded(lengthChromsome);
         randBegin.append(beginB);
         randLength.append(lengthChromsome - beginB);
-
     }
 
-    double randA;
-
-    for(int i = 0; i < step; i++){
-        randA = QRandomGenerator::global()->bounded(1.0);
-        if(randA < valueList.cross){
-            int begin,length;
-
-            if(randLengthCst[i] != 0){
-                begin = randBeginCst[i];
-                length = randLengthCst[i] + begin;
-                for(int j = begin; j < length; j++){
-                    swapChromosome(randBegin[i],randLength[i],chromosomeSequenceBin[2 * i][j],chromosomeSequenceBin[2 * i + 1][j]);
-                    swapChromosome(randBegin[i],randLength[i],chromosomeSequenceBin[2 * i][j + valueList.solutionsNum / 2],chromosomeSequenceBin[2 * i + 1][j + valueList.solutionsNum / 2]);
-                }
-           }
-        }
-    }
-}
-
-void airfoilOptimization::variationOperations(){
-
-    double randA;
-    int randLocation,randBegin;
-    for(int i = 0; i < valueList.eliteNum; i++){
-        randA = QRandomGenerator::global()->bounded(1.0);
-        if(valueList.variation > randA){                         
-            randLocation = QRandomGenerator::global()->bounded(valueList.solutionsNum - 1);
-            randBegin = QRandomGenerator::global()->bounded(lengthChromsome - 1);
-            changeChromosome(randBegin,chromosomeSequenceBin[i][randLocation]);
-        }
-    }
-}
-void airfoilOptimization::swapChromosome(const int begin,const int len,QString&a,QString&b){
-
-    QString tmpA = a.mid(begin,len);
-    QString tmpB = b.mid(begin,len);
-    a.replace(begin,len,tmpB);
-    b.replace(begin,len,tmpA);
-}
-
-void airfoilOptimization::changeChromosome(const int begin,QString&a){
-    QString val = a.mid(begin,1);
-    if(val == "1")
-        a.replace(begin,1,"0");
-    else
-        a.replace(begin,1,"1");
-
-}
-void airfoilOptimization::checkValue(){
-    for(int i = 0; i < valueList.eliteNum; i++){
-        for(int j = 0; j < valueList.solutionsNum / 2;j++){
-            if(chromosomeSequenceDec[i][j] > MaxCstArrayDec[j]){
-                chromosomeSequenceDec[i][j] = MaxCstArrayDec[j];
-            }else if(chromosomeSequenceDec[i][j] < MinCstArrayDec[j]){
-                chromosomeSequenceDec[i][j] = MinCstArrayDec[j];
+    for (int i = 0; i < step; ++i) {
+        if (QRandomGenerator::global()->bounded(1.0) < valueList.cross) {
+            const int end = randBeginCst[i] + randLengthCst[i];
+            for (int j = randBeginCst[i]; j < end; ++j) {
+                swapChromosome(randBegin[i], randLength[i],
+                               chromosomeSequenceBin[2 * i][j],
+                               chromosomeSequenceBin[2 * i + 1][j]);
+                swapChromosome(randBegin[i], randLength[i],
+                               chromosomeSequenceBin[2 * i][j + halfSolutions],
+                               chromosomeSequenceBin[2 * i + 1][j + halfSolutions]);
             }
         }
-        for(int j = valueList.solutionsNum / 2; j < valueList.solutionsNum;j++){
-            if(chromosomeSequenceDec[i][j] < MaxCstArrayDec[j]){
-                chromosomeSequenceDec[i][j] = MaxCstArrayDec[j];
-            }else if(chromosomeSequenceDec[i][j] > MinCstArrayDec[j]){
-                chromosomeSequenceDec[i][j] = MinCstArrayDec[j];
-            }
-        }
-
     }
-
 }
-void airfoilOptimization::changeCst(QVector<double>&cst){
-    double cstTmp;
-    int cstMax, cstMin;
-    int cstVal = static_cast<int>(1 / valueList.val);
-    QVector<double>temp1;
-    for(int j = 0;j < valueList.solutionsNum; j++){
-        cstMax = abs(static_cast<int>(MaxCstArrayDec[j] * cstVal));
-        cstMin = abs(static_cast<int>(MinCstArrayDec[j] * cstVal));
-        //cst = static_cast<double>((QRandomGenerator::global()->generateDouble()*(cstMax - cstMin) + cstMin) * valueList.val) * newSymbol[j];
-        cstTmp = double(generateRandomInt(cstMin,cstMax) * valueList.val * symbolArray[j]);
-        temp1.append(cstTmp);
-    }
-    cst = temp1;
 
-}
-double airfoilOptimization::max(const QVector<double>&array){
+void airfoilOptimization::variationOperations()
+{
+    if (valueList.solutionsNum <= 0 || lengthChromsome <= 0 ||
+        chromosomeSequenceBin.size() < valueList.eliteNum)
+        return;
 
-
-
-    double maxValue = array[0];
-    if(array.length() <= 1)
-        return maxValue;
-
-    for(int i = 1;i<array.size();i++){
-        if(array[i] > maxValue){
-            maxValue = array[i];
-
+    for (int i = 0; i < valueList.eliteNum; ++i) {
+        if (valueList.variation > QRandomGenerator::global()->bounded(1.0)) {
+            const int location =
+                QRandomGenerator::global()->bounded(valueList.solutionsNum);
+            const int bit = QRandomGenerator::global()->bounded(lengthChromsome);
+            if (chromosomeSequenceBin[i].size() != valueList.solutionsNum)
+                return;
+            changeChromosome(bit, chromosomeSequenceBin[i][location]);
         }
     }
+}
+void airfoilOptimization::swapChromosome(const int begin, const int len,
+                                         QString &a, QString &b)
+{
+    if (begin < 0 || len <= 0 || begin + len > a.size() ||
+        begin + len > b.size())
+        return;
 
-
-    return maxValue;
+    const QString tmpA = a.mid(begin, len);
+    const QString tmpB = b.mid(begin, len);
+    a.replace(begin, len, tmpB);
+    b.replace(begin, len, tmpA);
 }
 
-double airfoilOptimization::min(const QVector<double>&array){
+void airfoilOptimization::changeChromosome(const int begin, QString &a)
+{
+    if (begin < 0 || begin >= a.size())
+        return;
 
+    a[begin] = a[begin] == QLatin1Char('1') ? QLatin1Char('0')
+                                            : QLatin1Char('1');
+}
+void airfoilOptimization::checkValue()
+{
+    if (MaxCstArrayDec.size() != valueList.solutionsNum ||
+        MinCstArrayDec.size() != valueList.solutionsNum)
+        return;
 
-    double minValue = array[0];
-    if(array.length() <= 1)
-        return minValue;
-
-    for(int i = 1;i<array.size();i++){
-        if(array[i] < minValue){
-            minValue = array[i];
-
+    for (QVector<double> &chromosome : chromosomeSequenceDec) {
+        if (chromosome.size() != valueList.solutionsNum)
+            return;
+        for (int j = 0; j < valueList.solutionsNum; ++j) {
+            chromosome[j] = qBound(MinCstArrayDec[j], chromosome[j],
+                                   MaxCstArrayDec[j]);
         }
     }
-
-    return minValue;
 }
+void airfoilOptimization::changeCst(QVector<double> &cst)
+{
+    if (MaxCstArrayDec.size() != valueList.solutionsNum ||
+        MinCstArrayDec.size() != valueList.solutionsNum ||
+        symbolArray.size() != valueList.solutionsNum)
+        return;
 
-
-
-void airfoilOptimization::getLengthChromsome(){
-    int cstVal = static_cast<int>(1 / valueList.val);
-    int maxValue;
-    int max1 = static_cast<int>(max(cstArray) * (1 + valueList.cstRadio) * cstVal);
-    int max2 = static_cast<int>(min(cstArray) * -(1 + valueList.cstRadio) * cstVal);
-
-
-    maxValue = max1;
-    if(max1 < max2)
-        maxValue = max2;
-
-    QString bin = QString::number(maxValue,2);
-    int len = bin.length();
-    lengthChromsome = len;
-
-}
-
-void airfoilOptimization::generateSelectionProbability(){
-    selectProbability.append(0);
-    double tmp = 0;
-
-    if(valueList.selection == 1){
-        for(int i = 0; i < valueList.eliteNum; i++){
-            tmp = static_cast<double>((i + 1)) / valueList.eliteNum;
-            selectProbability.append(tmp);
-        }
+    const int cstVal = static_cast<int>(1.0 / valueList.val);
+    QVector<double> randomizedCst;
+    randomizedCst.reserve(valueList.solutionsNum);
+    for (int j = 0; j < valueList.solutionsNum; ++j) {
+        const int scaledA =
+            std::abs(static_cast<int>(MaxCstArrayDec[j] * cstVal));
+        const int scaledB =
+            std::abs(static_cast<int>(MinCstArrayDec[j] * cstVal));
+        randomizedCst.append(static_cast<double>(
+            generateRandomInt(scaledA, scaledB)) * valueList.val *
+            symbolArray[j]);
     }
-        else {
-            for(int i = 0; i < valueList.eliteNum; i++){
-                tmp = (1 - valueList.selection) / (1 - pow(valueList.selection,valueList.eliteNum)) * pow(valueList.selection,(valueList.eliteNum - i - 1)) + tmp;
-                selectProbability.append(tmp);
-            }
-
-        }
-
+    cst = randomizedCst;
 }
-int airfoilOptimization::generateRandomInt(int min, int max) {
-    // 使用QRandomGenerator生成[min, max]范围内的随机整数
-    return QRandomGenerator::global()->bounded(min, max + 1);
+double airfoilOptimization::max(const QVector<double> &array)
+{
+    if (array.isEmpty())
+        return 0.0;
+    return *std::max_element(array.cbegin(), array.cend());
+}
+
+double airfoilOptimization::min(const QVector<double> &array)
+{
+    if (array.isEmpty())
+        return 0.0;
+    return *std::min_element(array.cbegin(), array.cend());
+}
+
+void airfoilOptimization::getLengthChromsome()
+{
+    const double scale = 1.0 / valueList.val;
+    double largestMagnitude = 0.0;
+    for (int i = 0; i < MaxCstArrayDec.size(); ++i) {
+        largestMagnitude = std::max(largestMagnitude,
+                                    std::abs(MaxCstArrayDec[i]) * scale);
+        largestMagnitude = std::max(largestMagnitude,
+                                    std::abs(MinCstArrayDec[i]) * scale);
+    }
+
+    const int encodedMaximum = static_cast<int>(largestMagnitude);
+    lengthChromsome = std::max(1, QString::number(encodedMaximum, 2).size());
+}
+
+void airfoilOptimization::generateSelectionProbability()
+{
+    selectProbability.clear();
+    selectProbability.reserve(valueList.eliteNum + 1);
+    selectProbability.append(0.0);
+
+    QVector<double> logWeights;
+    logWeights.reserve(valueList.eliteNum);
+    const double logSelection = std::log(valueList.selection);
+    for (int i = 0; i < valueList.eliteNum; ++i)
+        logWeights.append((valueList.eliteNum - i - 1) * logSelection);
+
+    const double largestLog = max(logWeights);
+    QVector<double> weights;
+    weights.reserve(valueList.eliteNum);
+    double totalWeight = 0.0;
+    for (double logWeight : logWeights) {
+        const double weight = std::exp(logWeight - largestLog);
+        weights.append(weight);
+        totalWeight += weight;
+    }
+
+    double cumulativeProbability = 0.0;
+    for (double weight : weights) {
+        cumulativeProbability += weight / totalWeight;
+        selectProbability.append(cumulativeProbability);
+    }
+    selectProbability.last() = 1.0;
+}
+
+int airfoilOptimization::generateRandomInt(int min, int max)
+{
+    if (min > max)
+        std::swap(min, max);
+    std::uniform_int_distribution<int> distribution(min, max);
+    return distribution(*QRandomGenerator::global());
 }
