@@ -281,7 +281,7 @@ void wingVLM::generate3DModel(){
 void wingVLM::addDrag(){
 
 
-    QVector<double>dragForce;
+    QVector<double>dragForce(vinfArray.length(), 0.0);
     double zeroLiftDrag = 0;
     int realNy = 0;
     if(isAddZeroLiftDrag)
@@ -290,18 +290,6 @@ void wingVLM::addDrag(){
         realNy = Ny / 2;
     else
         realNy = Ny;
-    //计算网格中心的CST参数
-    QVector<QVector<double>>cstTmp;
-
-    for(int i = 0;i<realNy;i++){
-        QVector<double>tmp;
-        for(int j = 0;j<cstNum * 2;j++){
-            tmp.append((spanCstArray[i][j] + spanCstArray[i + 1][j]) / 2);
-        }
-
-        cstTmp.append(tmp);
-    }
-
     if(isAddXfoilDrag){
         if(hasEmptyRow()&&isUseLibraries){
             //计算沿翼展阻力系数
@@ -313,6 +301,18 @@ void wingVLM::addDrag(){
             }
 
         }else{
+            // Xfoil needs the CST values at the centre of each spanwise panel.
+            // Do not touch these arrays when viscous drag is disabled.
+            QVector<QVector<double>>cstTmp;
+            for(int i = 0;i<realNy;i++){
+                QVector<double>tmp;
+                for(int j = 0;j<cstNum * 2;j++){
+                    tmp.append((spanCstArray[i][j] + spanCstArray[i + 1][j]) / 2);
+                }
+
+                cstTmp.append(tmp);
+            }
+
             for(int index = 0;index<vinfArray.length();index++){
 
 
@@ -365,30 +365,25 @@ void wingVLM::addDrag(){
                smoothDrag();
         }
 
-    }else{
-        for(int i = 0;i<vinfArray.length();i++){
-            dragForce.append(0);
-
+        const int expectedDragCount = vinfArray.length() * realNy;
+        if (spanDragArray.length() < expectedDragCount ||
+            spanArea.length() < realNy || realArea == 0.0) {
+            qWarning() << "Unable to integrate wing viscous drag: invalid array sizes"
+                       << "spanDragArray=" << spanDragArray.length()
+                       << "expected=" << expectedDragCount
+                       << "spanArea=" << spanArea.length()
+                       << "realNy=" << realNy
+                       << "realArea=" << realArea;
+        } else {
+            for(int i = 0;i<vinfArray.length();i++){
+                double forceTmp = 0;
+                for(int j = 0;j<realNy;j++){
+                    const int index = i * realNy + j;
+                    forceTmp += spanDragArray[index] * spanArea[j];
+                }
+                dragForce[i] = forceTmp * 2 / realArea;
+            }
         }
-    }
-
-    for(int i = 0;i<vinfArray.length();i++){
-        QVector<double>tmp;
-
-
-        double forceTmp = 0;
-        for(int j = 0;j<realNy;j++){
-            int index = i * realNy + j;
-            tmp.append(spanDragArray[index]);
-            forceTmp += tmp[j] * spanArea[j];
-        }
-        forceTmp = forceTmp * 2 / realArea;
-        for(int j = realNy - 1;j>=0;j--){
-            tmp.append(tmp[j]);
-        }
-        //dragTmp.append(tmp);
-        dragForce.append(forceTmp);
-
     }
 
 
