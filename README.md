@@ -1,4 +1,7 @@
-# PassWing
+# ✈️ PassWing
+
+> 🎉 **PassWing 于 2026 年 9 月 9 日正式开源！**
+> 感谢每一位关注飞行器设计、空气动力学与科学计算的朋友，欢迎一起探索、使用和改进 PassWing。🚀
 
 PassWing 是一套基于 Qt/C++ 的飞行器气动设计与分析桌面软件，覆盖翼型、机翼、
 飞机和螺旋桨等设计对象，并提供数据可视化、网格/流场查看及其他辅助功能。
@@ -6,17 +9,17 @@ PassWing 是一套基于 Qt/C++ 的飞行器气动设计与分析桌面软件，
 项目现已采用现代 CMake 构建，支持 Windows 和 Linux，兼容 Qt 5/Qt 6，代码标准为
 C++17。
 
-## 主要功能
+## ✨ 主要功能
 
-- 翼型导入、设计、分析、优化及 XFoil 计算
-- 机翼定义、VLM 分析和优化
-- 飞机布局、气动显示及稳定性分析
-- 螺旋桨设计、BEMT/VLM 分析和结果展示
-- 基于 VTK 的三维模型、网格及流场可视化
-- HDF5 工程数据读写
-- 云计算功能预告页面
+- 🪽 翼型导入、设计、分析、优化及 XFoil 计算
+- 📐 机翼定义、VLM 分析和优化
+- ✈️ 飞机布局、气动显示及稳定性分析
+- 🌀 螺旋桨设计、BEMT/VLM 分析和结果展示
+- 📊 基于 VTK 的三维模型、网格及流场可视化
+- 💾 HDF5 工程数据读写
+- ☁️ 云计算功能预告页面
 
-## 技术栈
+## 🧰 技术栈
 
 - C++17
 - CMake 3.21+
@@ -26,7 +29,7 @@ C++17。
 - Eigen 3.3+
 - Ninja（推荐）
 
-## 快速开始
+## 🚀 快速开始
 
 首先安装对应平台的依赖，完整说明见 [BUILDING.md](BUILDING.md)。
 
@@ -188,7 +191,7 @@ Windows GitHub Actions 使用临时 `windows-2022` 执行环境，每次从头�
 环境”可重复构建的主要验收标准；它不等同于在一台刚安装完成的实体 Windows 电脑上
 进行人工测试。
 
-## 开发
+## 🛠️ 开发
 
 Debug 构建：
 
@@ -210,7 +213,7 @@ cmake --build --preset debug --parallel
 -DPASSWING_WARNINGS_AS_ERRORS=ON
 ```
 
-## 目录结构
+## 🗂️ 目录结构
 
 ```text
 src/
@@ -236,15 +239,25 @@ theoreticalFramework/   理论说明文档
 模块边界、依赖方向和新增代码约定见
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
-## 运行注意事项
+## ⚠️ 运行注意事项
 
 - 部分模型库和算例依赖外部数据文件；若未随仓库提供，相应功能会提示文件缺失，
   但不影响主程序启动。
 - Windows 下不要混用 MSVC 与 MinGW 编译的库。
 
-## 构建验证
+## ✅ 构建验证
 
 持续集成会在以下环境执行 Release 构建：
 
 - Ubuntu 22.04 + Qt 5
 - Windows Server 2022 + MSYS2 MinGW64 + Qt 6
+
+## 🤝 参与贡献
+
+欢迎通过 Issue 分享建议或反馈问题，也欢迎提交 Pull Request 一起完善 PassWing。无论是
+代码、文档、测试还是使用体验方面的贡献，都非常珍贵。💙
+
+## 📜 开源许可证
+
+PassWing 采用 **GNU General Public License v3.0 or later（GPL-3.0-or-later）** 开源。
+你可以在该许可证条款下使用、研究、修改和分发本项目；完整条款见 [LICENSE](LICENSE)。
