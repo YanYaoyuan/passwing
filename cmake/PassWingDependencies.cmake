@@ -10,7 +10,6 @@ find_package(${PASSWING_QT_PACKAGE} REQUIRED COMPONENTS
     Concurrent
     Core
     Help
-    Network
     OpenGL
     PrintSupport
     Sql
@@ -74,7 +73,6 @@ target_link_libraries(passwing_dependencies INTERFACE
     ${PASSWING_QT_PACKAGE}::Concurrent
     ${PASSWING_QT_PACKAGE}::Core
     ${PASSWING_QT_PACKAGE}::Help
-    ${PASSWING_QT_PACKAGE}::Network
     ${PASSWING_QT_PACKAGE}::OpenGL
     ${PASSWING_QT_PACKAGE}::PrintSupport
     ${PASSWING_QT_PACKAGE}::Sql

@@ -83,83 +83,11 @@
         <file>images/window/airfoil/airfoilExplorer.png</file>
         <file>images/saas.png</file>
         <file>images/saasA.png</file>
-        <file>styles/button.qss</file>
-        <file>styles/changeListButton.qss</file>
-        <file>styles/checkbox.qss</file>
-        <file>styles/combobox.qss</file>
-        <file>styles/emptyAddButton.qss</file>
-        <file>styles/inputBox.qss</file>
-        <file>styles/lineedit.qss</file>
-        <file>styles/menu.qss</file>
-        <file>styles/progressbar.qss</file>
-        <file>styles/radiobox.qss</file>
-        <file>styles/spinbox.qss</file>
-        <file>styles/splitter.qss</file>
-        <file>styles/toolButton.qss</file>
-        <file>styles/treeWidget.qss</file>
-        <file>icons/minus.svg</file>
-        <file>icons/plus.svg</file>
-        <file>icons/button/add.svg</file>
-        <file>icons/button/import.svg</file>
-        <file>icons/button/save.svg</file>
-        <file>icons/item/1.png</file>
-        <file>icons/item/bOutput.png</file>
-        <file>icons/item/contour.png</file>
-        <file>icons/item/contourSlice.png</file>
-        <file>icons/item/control.png</file>
-        <file>icons/item/copy.svg</file>
-        <file>icons/item/delete.svg</file>
-        <file>icons/item/inviscid.png</file>
-        <file>icons/item/mesh.png</file>
-        <file>icons/item/mesh.svg</file>
-        <file>icons/item/nonSolver.png</file>
-        <file>icons/item/project.png</file>
-        <file>icons/item/project.svg</file>
-        <file>icons/item/ref.png</file>
-        <file>icons/item/rename.svg</file>
-        <file>icons/item/run.png</file>
-        <file>icons/item/solver.png</file>
-        <file>icons/item/streamLine.png</file>
-        <file>icons/item/turbulent.png</file>
-        <file>icons/item/value.png</file>
-        <file>icons/item/volume.png</file>
-        <file>icons/item/vorticity.png</file>
-        <file>styles/treewidget/treewidget_darkblue.qss</file>
-        <file>styles/treewidget/treewidget_fluent.qss</file>
-        <file>styles/treewidget/treewidget_light.qss</file>
-        <file>styles/treewidget/treewidget_white.qss</file>
-        <file>styles/toolbutton/toolbutton_darkblue.qss</file>
-        <file>styles/toolbutton/toolbutton_fluent.qss</file>
-        <file>styles/toolbutton/toolbutton_light.qss</file>
-        <file>styles/toolbutton/toolbutton_white.qss</file>
-        <file>styles/plaintextedit/plaintextedit_darkblue.qss</file>
-        <file>styles/plaintextedit/plaintextedit_fluent.qss</file>
-        <file>styles/plaintextedit/plaintextedit_light.qss</file>
-        <file>styles/plaintextedit/plaintextedit_white.qss</file>
-        <file>styles/fun3DWidget/label.qss</file>
-        <file>styles/fun3DWidget/qGroup.qss</file>
-        <file>styles/fun3DWidget/qScrollBar.qss</file>
-        <file>styles/fun3DWidget/widget.qss</file>
-        <file>icons/vtkviewer/axesHide.png</file>
-        <file>icons/vtkviewer/axesShow.png</file>
-        <file>icons/vtkviewer/barHide.png</file>
-        <file>icons/vtkviewer/barShow.png</file>
-        <file>icons/vtkviewer/mesh.png</file>
-        <file>icons/vtkviewer/surface.png</file>
-        <file>icons/vtkviewer/xy.png</file>
-        <file>icons/vtkviewer/xyz.png</file>
-        <file>icons/vtkviewer/yz.png</file>
-        <file>icons/vtkviewer/zx.png</file>
-        <file>icons/item/airfoil.png</file>
-        <file>icons/item/airplane.png</file>
-        <file>icons/item/propeller.png</file>
-        <file>icons/item/wing.png</file>
+        <file>theNext.png</file>
         <file>images/importAirfoil.png</file>
         <file>images/importPro.png</file>
         <file>images/savePro.png</file>
         <file>images/airfoilLib.png</file>
         <file>images/propellerLib.png</file>
-        <file>icons/item/meshA.png</file>
-        <file>icons/item/meshB.png</file>
     </qresource>
 </RCC>
