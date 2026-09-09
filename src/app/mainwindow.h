@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QToolButton>
 #include <QKeyEvent>
+#include <QLabel>
 #include "chat/chatwidget.h"
 #include "wing/wingdisplay.h"
 #include "aircraft/airplanedisplay.h"
@@ -14,7 +15,6 @@
 #include "geometry/airplanelibrary.h"
 #include "widgets/imagebutton.h"
 #include "common/myfile.h"
-#include "saas/cfd/cfddisplay.h"
 enum MODEL_TYPE{
 
     MODEL_AIRFOILDESIGN,
@@ -26,7 +26,6 @@ enum MODEL_TYPE{
     MODEL_PROPANALYSE,
     MODEL_AIRPLANEDESIGN,
     MODEL_AIRPLANESTABILITY,
-    MODEL_SAASMODEL,
     MODEL_NOTHING
 
 };
@@ -218,7 +217,7 @@ private:
     STLReader *displayAirCartWindow;
     airplaneLibrary *displayAirportWindow;
     myFile *projectFile;
-    cfdDisplay *cfdWindow;
+    QLabel *saasPreviewWindow;
 
 
 

@@ -18,7 +18,6 @@ src/
   chat/       Chat user interface
   common/     Shared data structures, math, files, and plotting infrastructure
   widgets/    Reusable Qt widgets
-  saas/       CFD setup, remote jobs, mesh, and result visualization
   help/       Desktop help integration
 ```
 
@@ -43,7 +42,6 @@ The intended dependency direction is:
 
 ```text
 app -> feature modules -> common/widgets
-app -> saas            -> common/widgets
 aircraft/propeller     -> wing/airfoil -> common
 ```
 

@@ -23,7 +23,13 @@ mainWindow::mainWindow(QMainWindow *parent)
     designAirplaneWindow = new airplaneDisplay();
     designAirfoilWindow = new airfoilDisplay();
     designPropellerWindow = new propellerDisplay();
-    cfdWindow = new cfdDisplay();
+    saasPreviewWindow = new QLabel();
+    saasPreviewWindow->setAlignment(Qt::AlignCenter);
+    saasPreviewWindow->setPixmap(QPixmap(QStringLiteral(":/theNext.png")));
+    saasPreviewWindow->setScaledContents(true);
+    saasPreviewWindow->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    saasPreviewWindow->setMinimumSize(1, 1);
+    saasPreviewWindow->setStyleSheet(QStringLiteral("background-color: #020b18;"));
     //displayAirCartWindow = new STLReader();
     projectFile = new myFile();
     displayAirportWindow = new airplaneLibrary();
@@ -59,8 +65,6 @@ mainWindow::mainWindow(QMainWindow *parent)
     connect(designAirfoilWindow,&airfoilDisplay::emitAirfoilProgressBarValue,this,&mainWindow::updateMyProgressBar);
     //螺旋桨通讯
     connect(designAirfoilWindow,&airfoilDisplay::emitAirfoilArray,designPropellerWindow,&propellerDisplay::updateAirfoilArray);
-    //cfd通讯
-    connect(designAirfoilWindow,&airfoilDisplay::emitAirfoilArray,cfdWindow,&cfdDisplay::updateAirfoilArray);
     connect(designPropellerWindow,&propellerDisplay::emitPropellerProgressBarValue,this,&mainWindow::updateMyProgressBar);
     //connect(this,&mainWindow::interAirfoilArraySignal,designWingWindow,&wingDisplay::updateAirfoilArray);
     //机翼信息通讯
@@ -256,19 +260,9 @@ void mainWindow::initialLeftWindow() {
 // .cpp
 void mainWindow::onSaasViewToggled()
 {
-    if (!cfdWindow->login->isJoin) {
-        cfdWindow->login->exec();
-        if(cfdWindow->login->isJoin){
-            replaceCentralWidget(cfdWindow);
-            saasViewButton->setIcon(QIcon(saasViewIconA));
-        }
-
-
-    } else {
-        // SAAS模式
-
-        replaceCentralWidget(cfdWindow);
-    }
+    ANALYSE_TYPE = MODEL_NOTHING;
+    replaceCentralWidget(saasPreviewWindow);
+    saasViewButton->setIcon(QIcon(saasViewIconA));
 }
 void mainWindow::initialTopWindow() {
     topDock = new QDockWidget();

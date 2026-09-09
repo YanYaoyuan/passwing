@@ -11,7 +11,6 @@ add_subdirectory(propeller)
 add_subdirectory(geometry)
 add_subdirectory(dynamics)
 add_subdirectory(chat)
-add_subdirectory(saas)
 add_subdirectory(help)
 
 target_sources(passwing PRIVATE

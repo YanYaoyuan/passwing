@@ -1,7 +1,7 @@
 # PassWing
 
 PassWing 是一套基于 Qt/C++ 的飞行器气动设计与分析桌面软件，覆盖翼型、机翼、
-飞机和螺旋桨等设计对象，并提供数据可视化、网格/流场查看及 FUN3D 任务辅助功能。
+飞机和螺旋桨等设计对象，并提供数据可视化、网格和流场查看功能。
 
 项目现已采用现代 CMake 构建，支持 Windows 和 Linux，兼容 Qt 5/Qt 6，代码标准为
 C++17。
@@ -14,7 +14,7 @@ C++17。
 - 螺旋桨设计、BEMT/VLM 分析和结果展示
 - 基于 VTK 的三维模型、网格及流场可视化
 - HDF5 工程数据读写
-- FUN3D 本地任务启动与结果辅助查看
+- 云计算功能预告页面
 
 ## 技术栈
 
@@ -128,7 +128,6 @@ src/
   geometry/             几何模型及 VTK 加载
   dynamics/             动力学模型
   chat/                 对话界面
-  saas/                 CFD、网格、任务和结果查看
   help/                 桌面帮助集成
 cmake/                  依赖发现和编译选项
 resoure/                Qt 资源文件（保留历史拼写）
@@ -143,8 +142,6 @@ theoreticalFramework/   理论说明文档
 
 ## 运行注意事项
 
-- FUN3D 本地运行需要 `mpiexec` 位于 `PATH` 中，并能找到 Windows 下的
-  `nodet_mpi.exe` 或 Linux 下的 `nodet_mpi`。
 - 部分模型库和算例依赖外部数据文件；若未随仓库提供，相应功能会提示文件缺失，
   但不影响主程序启动。
 - Windows 下不要混用 MSVC 与 MinGW 编译的库。
