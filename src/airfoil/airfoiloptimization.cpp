@@ -395,7 +395,8 @@ void airfoilOptimization::getLengthChromsome()
     }
 
     const int encodedMaximum = static_cast<int>(largestMagnitude);
-    lengthChromsome = std::max(1, QString::number(encodedMaximum, 2).size());
+    lengthChromsome = std::max(
+        1, static_cast<int>(QString::number(encodedMaximum, 2).size()));
 }
 
 void airfoilOptimization::generateSelectionProbability()

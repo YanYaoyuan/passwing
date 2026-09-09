@@ -679,7 +679,8 @@ int wingOptimization::encodedLength(double lower, double upper,
         std::swap(lower, upper);
     const int maxIndex = static_cast<int>(
         std::ceil((upper - lower) / resolution));
-    return std::max(1, QString::number(maxIndex, 2).size());
+    return std::max(1,
+                    static_cast<int>(QString::number(maxIndex, 2).size()));
 }
 
 void wingOptimization::crossMatrix(QVector<QVector<QString>> &matrix,
